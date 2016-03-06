@@ -1,0 +1,26 @@
+{
+  "name": "live-proxy",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevinbarabash/live-proxy.git"
+  },
+  "author": "Kevin Barabash <kevinb@khanacademy.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kevinbarabash/live-proxy/issues"
+  },
+  "homepage": "https://github.com/kevinbarabash/live-proxy#readme",
+  "dependencies": {
+    "eslint": "^2.3.0"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.0",
+    "watchify": "^3.7.0"
+  }
+}

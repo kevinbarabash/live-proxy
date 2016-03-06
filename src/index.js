@@ -14,3 +14,5 @@ fetch('example.js')
         editor.setValue(text);
         eval(text);
     });
+
+console.log('hello, world!');

@@ -17,4 +17,3 @@ p.draw = function() {
 p.mouseClicked = function() {
     ellipses.push({ x: p.mouseX, y: p.mouseY });
 };
-
