@@ -1,3 +1,5 @@
+const transform = require('./transform');
+
 const canvas = document.getElementById("canvas");
 
 const p = new Processing(canvas, (processing) => {
@@ -10,10 +12,10 @@ const p = new Processing(canvas, (processing) => {
 
 fetch('example.js')
     .then(res => res.text())
-    .then(text => {
-        editor.setValue(text);
+    .then(code => {
+        editor.setValue(code);
 
-        const messages = eslint.verify(text, {
+        const messages = eslint.verify(code, {
             rules: {
                 semi: 2
             }
@@ -22,7 +24,7 @@ fetch('example.js')
         if (messages.length > 0) {
             console.log(messages);
         } else {
-            eval(text);
+            eval(transform(code));
         }
     });
 
@@ -38,7 +40,7 @@ editor.on("input", function() {
     if (messages.length > 0) {
         console.log(messages);
     } else {
-        eval(code);
+        eval(transform(code));
     }
 });
 
