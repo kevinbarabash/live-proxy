@@ -93,9 +93,6 @@ function createProxy(ctor) {
             }
         }
 
-        console.log(currentKeys);
-        console.log(futureKeys);
-
         //for (const prop of Object.keys(ctor.prototype)) {
         //    ProxyClass.prototype[prop] = function () {
         //        currentClass.prototype[prop].apply(this, arguments);
