@@ -219,6 +219,8 @@ const transform = function(code, context) {
         leave(node, parent) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
+
+                // TODO: don't swallow exception, call a global method to report the error
                 node.body = b.BlockStatement([
                     b.TryStatement(body,
                         b.CatchClause(b.Identifier('e'), b.BlockStatement([]))
