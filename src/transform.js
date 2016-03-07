@@ -30,7 +30,7 @@ var isReference = function(node, parent) {
 
 
 const transform = function(code, context) {
-    const ast = esprima.parse(code);
+    const ast = esprima.parse(code, { range: true });
 
     let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
         "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver",
@@ -208,6 +208,42 @@ const transform = function(code, context) {
                 // Remove all local variables from the scopes stack as we exit
                 // the function expression/declaration.
                 scopes.pop();
+            }
+        }
+    });
+
+    // replaces function expressions with a sequence expression that assigns
+    // the function expression to _ and then rewrite _.toString to return the
+    // original function
+    estraverse.replace(ast, {
+        leave(node, parent) {
+            if (/^Function/.test(node.type)) {
+                const body = node.body;
+                node.body = b.BlockStatement([
+                    b.TryStatement(body,
+                        b.CatchClause(b.Identifier('e'), b.BlockStatement([]))
+                    )
+                ]);
+
+                return b.SequenceExpression([
+                    b.AssignmentExpression(
+                        b.Identifier('_'),
+                        '=',
+                        node
+                    ),
+                    b.AssignmentExpression(
+                        b.MemberExpression(b.Identifier('_'), b.Identifier('toString')),
+                        '=',
+                        b.FunctionExpression(b.BlockStatement([
+                            b.ReturnStatement(
+                                b.ExpressionStatement(
+                                    b.Literal(code.substring(node.range[0], node.range[1]))
+                                )
+                            )
+                        ]))
+                    ),
+                    b.Identifier('_')
+                ]);
             }
         }
     });

@@ -25,7 +25,8 @@ fetch('example.js')
         });
 
         if (messages.length > 0) {
-            console.log(messages);
+            // console.log(messages);
+            canvas.style.opacity = 0.5;
         } else {
             try {
                 const transformedCode = transform(code, p);
@@ -42,49 +43,48 @@ fetch('example.js')
                 });
                 canvas.style.opacity = 1.0;
             } catch(e) {
-                console.log(e);
                 canvas.style.opacity = 0.5;
             }
         }
-    });
+    }).then(() => {
+        editor.on("input", function() {
+            var code = editor.getValue();
 
-editor.on("input", function() {
-    var code = editor.getValue();
-
-    const messages = eslint.verify(code, {
-        rules: {
-            semi: 2
-        }
-    });
-
-    if (messages.length > 0) {
-        console.log(messages);
-    } else {
-        try {
-            const transformedCode = transform(code, p);
-            window.transformedCode = transformedCode;
-            const func = new Function('__env__', 'p', transformedCode);
-            const newEnv = {};
-            func(newEnv, p);
-
-            Object.keys(newEnv).forEach(name => {
-                const value = newEnv[name];
-                if (typeof value === 'object') {
-                    const hash = md5(JSON.stringify(value));
-                    if (archive[name] === hash) {
-                        newEnv[name] = env[name];
-                    } else {
-                        archive[name] = hash;
-                        env[name] = newEnv[name];
-                    }
+            const messages = eslint.verify(code, {
+                rules: {
+                    semi: 2
                 }
             });
-            canvas.style.opacity = 1.0;
-        } catch(e) {
-            console.log(e);
-            canvas.style.opacity = 0.5;
-        }
-    }
-});
+
+            if (messages.length > 0) {
+                canvas.style.opacity = 0.5;
+                // console.log(messages);
+            } else {
+                try {
+                    const transformedCode = transform(code, p);
+                    window.transformedCode = transformedCode;
+                    const func = new Function('__env__', 'p', transformedCode);
+                    const newEnv = {};
+                    func(newEnv, p);
+
+                    Object.keys(newEnv).forEach(name => {
+                        const value = newEnv[name];
+                        if (typeof value === 'object') {
+                            const hash = md5(JSON.stringify(value));
+                            if (archive[name] === hash) {
+                                newEnv[name] = env[name];
+                            } else {
+                                archive[name] = hash;
+                                env[name] = newEnv[name];
+                            }
+                        }
+                    });
+                    canvas.style.opacity = 1.0;
+                } catch(e) {
+                    canvas.style.opacity = 0.5;
+                }
+            }
+        });
+    });
 
 console.log('hello, world!');

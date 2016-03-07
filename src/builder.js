@@ -111,6 +111,48 @@ module.exports = {
             prefix: prefix
         };
     },
+
+    TryStatement(block, handler = null, finalizer = null) {
+        return {
+            type: "TryStatement",
+            block: block,
+            handler: handler,
+            finalizer: finalizer
+        };
+    },
+
+    CatchClause(param, body) {
+        return {
+            type: "CatchClause",
+            param: param,
+            body: body,
+        };
+    },
+
+    SequenceExpression(expressions) {
+        return {
+            type: "SequenceExpression",
+            expressions: expressions,
+        };
+    },
+
+    FunctionExpression(body, params = [], defaults = []) {
+        return {
+            type: "FunctionExpression",
+            id: null,
+            params: params,
+            defaults: defaults,
+            body: body
+        };
+    },
+
+    ReturnStatement(argument = null) {
+        return {
+            type: "ReturnStatement",
+            argument: argument
+        };
+    },
+
     /**
      * @param {Array} declarations
      * @param {string} kind: "var", "let", "const"
