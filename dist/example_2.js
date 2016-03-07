@@ -1,5 +1,8 @@
 p.fill(255, 160, 0);
 
+var win = (function () { return this; })();
+console.log(win);
+
 var x = 13;
 var y = 50;
 

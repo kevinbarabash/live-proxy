@@ -13,6 +13,28 @@ const p = new Processing(canvas, (processing) => {
 const env = {};
 const archive = {};
 
+// TODO: make pre-defined items unconfigurable but allow globals to be created
+// TODO: add more stuff this this list
+const customWindow = {
+    // global methods
+    parseInt: parseInt,
+    parseFloat: parseFloat,
+
+    setTimeout: setTimeout,     // wrap this so we can cleanup timeouts
+    clearTimeout: clearTimeout,
+    setInterval: setInterval,   // wrap this so we can cleanup interval
+    clearInterval: clearInterval,
+
+    // global objects
+    Number: Number,
+    RegExp: RegExp,
+    Object: Object,
+    String: String,
+    Array: Array,
+    JSON: JSON,
+    Date: Date,
+};
+
 fetch('example_2.js')
     .then(res => res.text())
     .then(code => {
@@ -29,9 +51,9 @@ fetch('example_2.js')
             canvas.style.opacity = 0.5;
         } else {
             try {
-                const transformedCode = transform(code, p);
-                const func = new Function('__env__', 'p', transformedCode);
-                func(env, p);
+                const transformedCode = transform(code, p, customWindow);
+                const func = new Function('__env__', 'customWindow', 'p', transformedCode);
+                func(env, customWindow, p);
 
                 Object.keys(env).forEach(key => {
                     const value = env[key];
@@ -62,8 +84,8 @@ fetch('example_2.js')
                 canvas.style.opacity = 0.5;
             } else {
                 try {
-                    const transformedCode = transform(code, p);
-                    const func = new Function('__env__', 'p', transformedCode);
+                    const transformedCode = transform(code, p, customWindow);
+                    const func = new Function('__env__', 'customWindow', 'p', transformedCode);
                     const newEnv = {};
                     const funcList = {};    // keeps track of functions being defined during this run
 
@@ -83,27 +105,23 @@ fetch('example_2.js')
                             Object.defineProperty(newEnv, name, {
                                 enumerable: true,
                                 get() {
-                                    if (funcList[name]) {
-                                        return value;
-                                    } else {
-                                        return undefined;
-                                    }
+                                    return funcList[name] ? value : undefined;
                                 },
                                 set(newValue) {
                                     if (newValue.toString() !== value.toString()) {
                                         // TODO: re-run the whole thing
                                         // if there are no objects created by calling the
                                         // constructor then we don't have to rerun anything
-                                        console.log(`should redefine ${name} constructor`);
+                                        // TODO: rewrite NewExpressions so we can track which constructors have been called
+                                        archive[name] = newValue;
                                     }
-                                    console.log(`${name} defined`);
                                     funcList[name] = true;
                                 }
                             });
                         }
                     });
 
-                    func(newEnv, p);
+                    func(newEnv, customWindow, p);
 
                     Object.keys(newEnv).forEach(name => {
                         const value = newEnv[name];

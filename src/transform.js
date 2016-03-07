@@ -29,7 +29,7 @@ var isReference = function(node, parent) {
 };
 
 
-const transform = function(code, context) {
+const transform = function(code, context, customWindow) {
     const ast = esprima.parse(code, { range: true });
 
     let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
@@ -87,6 +87,15 @@ const transform = function(code, context) {
                     // want to prefix them so return.
                     if (["undefined", "Infinity", "NaN", "arguments"].includes(node.name)) {
                         return;
+                    }
+
+                    // Don't prefix globals we want exposed
+                    if (Object.keys(customWindow).includes(node.name)) {
+                        return;
+                    }
+
+                    if (node.name === "window") {
+                        return b.Identifier('customWindow');
                     }
 
                     // Prefix identifiers that exist in the context object and
@@ -246,6 +255,18 @@ const transform = function(code, context) {
                     ),
                     b.Identifier('_')
                 ]);
+            }
+        }
+    });
+
+    estraverse.replace(ast, {
+        leave(node, parent) {
+            if (node.type === 'ThisExpression') {
+                return b.ConditionalExpression(
+                    b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')),
+                    b.Identifier('customWindow'),
+                    b.ThisExpression()
+                );
             }
         }
     });

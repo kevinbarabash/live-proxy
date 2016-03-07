@@ -153,6 +153,21 @@ module.exports = {
         };
     },
 
+    ConditionalExpression(test, consequent, alternate) {
+        return {
+            type: "ConditionalExpression",
+            test: test,
+            alternate: alternate,
+            consequent: consequent
+        };
+    },
+
+    ThisExpression() {
+        return {
+            type: "ThisExpression"
+        };
+    },
+
     /**
      * @param {Array} declarations
      * @param {string} kind: "var", "let", "const"
