@@ -15,6 +15,7 @@ const p = new Processing(canvas, (processing) => {
 
 
 // env stores objects between code changes
+// TODO: rename this to context
 const env = {};
 
 // archive stores hashes of stringified objects
@@ -50,6 +51,69 @@ const pGlobals = "/*global " +
         .join(" ") +
     "*/\n";
 
+
+const injectFunctions = function(newEnv, funcList) {
+    Object.keys(archive).forEach(name => {
+        const value = archive[name];
+
+        if (typeof value === 'function') {
+            Object.keys(value.prototype).forEach(key => {
+                delete value.prototype[key];
+            });
+
+            Object.defineProperty(newEnv, name, {
+                enumerable: true,
+                get() {
+                    return funcList[name] ? value : undefined;
+                },
+                set(newValue) {
+                    if (newValue.toString() !== value.toString()) {
+                        // TODO: re-run the whole thing
+                        // if there are no objects created by calling the
+                        // constructor then we don't have to rerun anything
+                        archive[name] = newValue;
+                    }
+                    funcList[name] = true;
+                }
+            });
+        }
+    });
+};
+
+
+const updateEnvironments = function(env, newEnv, funcList) {
+    Object.keys(newEnv).forEach(name => {
+        const value = newEnv[name];
+
+        if (typeof value === 'object') {
+            const hash = md5(JSON.stringify(value));
+
+            // even though we don't do anything with newEnv directly,
+            // the objects it stores can be updated via callbacks and
+            // event handlers that are running in between updates to the
+            // code
+            if (archive[name] === hash) {
+                newEnv[name] = env[name];
+            } else {
+                env[name] = newEnv[name];
+                archive[name] = hash;
+            }
+        } else if (typeof value === 'function') {
+            if (archive.hasOwnProperty(name)) {
+                // if the function is in the archive but we didn't
+                // define the last time the code changed delete it
+                if (!funcList[name]) {
+                    delete archive[name];
+                }
+            } else {
+                // if the function isn't in the archive add it
+                archive[name] = value;
+            }
+        }
+    });
+};
+
+
 const handleUpdate = function() {
     var code = editor.getValue();
 
@@ -66,72 +130,17 @@ const handleUpdate = function() {
     } else {
         try {
             const transformedCode = transform(code, p, customWindow.window);
-            const func = new Function('__env__', 'customWindow', 'p', transformedCode);
-            const newEnv = {};
-            const funcList = {};    // keeps track of functions being defined during this run
-
             window.transformedCode = transformedCode;
 
-            // TODO: create separate archives for functions
-            // that we we don't have to go through all objects just to
-            // find the functions
-            Object.keys(archive).forEach(name => {
-                const value = archive[name];
+            const func = new Function('__env__', 'customWindow', 'p', transformedCode);
+            const newEnv = {};
+            const funcList = {};    // functions being defined during this run
 
-                if (typeof value === 'function') {
-                    Object.keys(value.prototype).forEach(key => {
-                        delete value.prototype[key];
-                    });
-
-                    Object.defineProperty(newEnv, name, {
-                        enumerable: true,
-                        get() {
-                            return funcList[name] ? value : undefined;
-                        },
-                        set(newValue) {
-                            if (newValue.toString() !== value.toString()) {
-                                // TODO: re-run the whole thing
-                                // if there are no objects created by calling the
-                                // constructor then we don't have to rerun anything
-                                archive[name] = newValue;
-                            }
-                            funcList[name] = true;
-                        }
-                    });
-                }
-            });
+            injectFunctions(newEnv, funcList);
 
             func(newEnv, customWindow.window, p);
 
-            Object.keys(newEnv).forEach(name => {
-                const value = newEnv[name];
-
-                if (typeof value === 'object') {
-                    const hash = md5(JSON.stringify(value));
-
-                    // even though we don't do anything with newEnv directly,
-                    // the objects it stores can be updated via callbacks and
-                    // event handlers that are running in between updates to the
-                    // code
-                    if (archive[name] === hash) {
-                        newEnv[name] = env[name];
-                    } else {
-                        env[name] = newEnv[name];
-                        archive[name] = hash;
-                    }
-                } else if (typeof value === 'function') {
-                    if (archive.hasOwnProperty(name)) {
-                        // if the function is in the archive but we didn't
-                        // define the last time the code changed delete it
-                        if (!funcList[name]) {
-                            delete archive[name];
-                        }
-                    } else {
-                        // if the function isn't in the archive add it
-                        archive[name] = value;
-                    }
-                }
-            });
+            updateEnvironments(env, newEnv, funcList);
 
             canvas.style.opacity = 1.0;
         } catch(e) {
