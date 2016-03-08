@@ -33,6 +33,10 @@ const customWindow = {
     Array: Array,
     JSON: JSON,
     Date: Date,
+
+    "undefined": undefined,
+    "Infinity": Infinity,
+    "NaN": NaN,
 };
 
 fetch('example_2.js')

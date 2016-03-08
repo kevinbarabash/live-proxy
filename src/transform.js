@@ -28,8 +28,8 @@ var isReference = function(node, parent) {
     return !isMemberExpression || isComputedProperty || isObject;
 };
 
-
-const transform = function(code, context, customWindow) {
+// TODO: allow an array of objects to pull global references from
+const transform = function(code, libraryObject, customWindow) {
     const ast = esprima.parse(code, { range: true });
 
     let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
@@ -85,12 +85,10 @@ const transform = function(code, context, customWindow) {
 
                     // These values show up a Identifiers in the AST.  We don't
                     // want to prefix them so return.
-                    if (["undefined", "Infinity", "NaN", "arguments"].includes(node.name)) {
-                        return;
-                    }
-
-                    // Don't prefix globals we want exposed
-                    if (Object.keys(customWindow).includes(node.name)) {
+                    // TODO: only allow this inside of functions
+                    // we can disallow through a lint rule
+                    // currently users can use it access __env__, p, and customLibrary directly
+                    if (["arguments"].includes(node.name)) {
                         return;
                     }
 
@@ -98,15 +96,29 @@ const transform = function(code, context, customWindow) {
                         return b.Identifier('customWindow');
                     }
 
-                    // Prefix identifiers that exist in the context object and
+                    // Prefix identifiers that exist in the library object and
                     // have not been defined in any scope.
-                    // Also, prefix any other identifers that
-                    // exist at the global scope.
-                    if ((node.name in context && scopeIndex === -1) ||
-                        scopeIndex === 0) {
+                    // Since we're looking in libraryObject first, any functions
+                    // in it have precedence over customWindow.
+                    if (node.name in libraryObject && scopeIndex === -1) {
+                        return b.MemberExpression(
+                            b.Identifier('p'), b.Identifier(node.name));
+                    }
+
+                    // TODO: figure out how to track values added to window
+                    if (node.name in customWindow && scopeIndex === -1) {
+                        return b.MemberExpression(
+                            b.Identifier('customWindow'), b.Identifier(node.name));
+                    }
+
+                    // Prefix identifiers that have been declared by the user
+                    // in the global scope.
+                    if (scopeIndex === 0) {
                         return b.MemberExpression(
                             b.Identifier(envName), b.Identifier(node.name));
                     }
+
+                    // TODO: throw an error that the variable hasn't been declared
                 }
             } else if (node.type === "VariableDeclaration") {
                 if (node.declarations.length === 1) {
