@@ -126,7 +126,7 @@ const handleUpdate = function() {
     });
 
     if (messages.length > 0) {
-        console.log(messages);
+        displayLint(messages);
         canvas.style.opacity = 0.5;
     } else {
         try {
@@ -149,6 +149,16 @@ const handleUpdate = function() {
         }
     }
 };
+
+
+const displayLint = function(messages) {
+    const messageContainer = document.querySelector('#messages');
+
+    messageContainer.innerHTML = messages.map(message => {
+        return `${message.message} on line ${message.line - 2} column ${message.column}<BR>`;
+    }).join('');
+};
+
 
 fetch('example_2.js')
     .then(res => res.text())
