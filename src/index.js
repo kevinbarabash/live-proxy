@@ -129,6 +129,7 @@ const handleUpdate = function() {
         displayLint(messages);
         canvas.style.opacity = 0.5;
     } else {
+        displayLint(messages);
         try {
             const transformedCode = transform(code, p, customWindow.window);
             window.transformedCode = transformedCode;
