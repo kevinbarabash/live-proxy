@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Proxy Test</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+
+        #editor {
+            flex-grow: 1;
+        }
+
+        #canvas {
+            flex-shrink: 0;
+            border-left: solid 1px lightgray;
+            width: 512px;
+        }
+    </style>
+</head>
+<body>
+
+<script src="../lib/processing.js"></script>
+<script src="../lib/eslint.js"></script>
+<script src="../lib/ace/ace.js"></script>
+
+<div id="container">
+    <div id="editor"></div>
+    <canvas id="canvas" width="512"></canvas>
+</div>
+
+<script>
+    var editor = ace.edit("editor");
+    editor.setFontSize(16);
+    editor.session.setMode("ace/mode/javascript");
+</script>
+
+<script src="bundle.js"></script>
+
+</body>
+</html>
