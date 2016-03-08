@@ -1,5 +1,8 @@
 const md5 = require('blueimp-md5');
+
 const transform = require('./transform');
+const customWindow = require('./custom-window');
+
 
 const canvas = document.getElementById("canvas");
 
@@ -10,7 +13,6 @@ const p = new Processing(canvas, (processing) => {
     processing.draw = function () {};
 });
 
-window.p = p;
 
 // env stores objects between code changes
 const env = {};
@@ -25,37 +27,7 @@ const env = {};
 // TODO: figure out how to save space if multiple identifiers point to the same object
 const archive = {};
 
-// TODO: make pre-defined items unconfigurable but allow globals to be created
-// TODO: add more stuff this this list
-const customWindow = {
-    // global methods
-    parseInt: parseInt,
-    parseFloat: parseFloat,
-    isNaN: isNaN,
-    isFinite: isFinite,
-    setTimeout: setTimeout,     // wrap this so we can cleanup timeouts
-    clearTimeout: clearTimeout,
-    setInterval: setInterval,   // wrap this so we can cleanup interval
-    clearInterval: clearInterval,
 
-    // global objects
-    Object: Object,
-    Array: Array,
-    // Function: Function,      // disallow access because it's a form of eval
-    Boolean: Boolean,
-    Number: Number,
-    String: String,
-    RegExp: RegExp,
-    Date: Date,
-    JSON: JSON,
-    Math: Math,
-    console: console,
-
-    // special values
-    "undefined": undefined,
-    "Infinity": Infinity,
-    "NaN": NaN,
-};
 
 const eventHandlers = [
     "draw",
@@ -77,52 +49,11 @@ const pGlobals = "/*global " +
         .map(key => eventHandlers.includes(key) ? `${key}:true` : key)
         .join(" ") +
     "*/\n";
-const customWindowGlobals = "/*global " + Object.keys(customWindow).join(" ") + "*/\n";
-
-
-const loadCode = function(code) {
-    editor.setValue(code);
-
-    const messages = eslint.verify(pGlobals + customWindowGlobals + code, {
-        rules: {
-            "semi": 2,
-            "no-undef": 2
-        }
-    });
-
-    if (messages.length > 0) {
-        console.log(messages);
-        canvas.style.opacity = 0.5;
-    } else {
-        try {
-            const transformedCode = transform(code, p, customWindow);
-            const func = new Function('__env__', 'customWindow', 'p', transformedCode);
-            func(env, customWindow, p);
-
-            Object.keys(env).forEach(key => {
-                const value = env[key];
-                if (typeof value === 'object') {
-                    const hash = md5(JSON.stringify(value));
-                    archive[key] = hash;
-                } else if (typeof value === 'function') {
-                    archive[key] = value;
-                }
-            });
-
-            canvas.style.opacity = 1.0;
-        } catch(e) {
-            canvas.style.opacity = 0.5;
-        }
-    }
-
-    // handle updates
-    editor.on("input", handleUpdate);
-};
 
 const handleUpdate = function() {
     var code = editor.getValue();
 
-    const messages = eslint.verify(pGlobals + customWindowGlobals + code, {
+    const messages = eslint.verify(pGlobals + customWindow.globals + code, {
         rules: {
             "semi": 2,
             "no-undef": 2
@@ -134,7 +65,7 @@ const handleUpdate = function() {
         canvas.style.opacity = 0.5;
     } else {
         try {
-            const transformedCode = transform(code, p, customWindow);
+            const transformedCode = transform(code, p, customWindow.window);
             const func = new Function('__env__', 'customWindow', 'p', transformedCode);
             const newEnv = {};
             const funcList = {};    // keeps track of functions being defined during this run
@@ -162,7 +93,6 @@ const handleUpdate = function() {
                                 // TODO: re-run the whole thing
                                 // if there are no objects created by calling the
                                 // constructor then we don't have to rerun anything
-                                // TODO: rewrite NewExpressions so we can track which constructors have been called
                                 archive[name] = newValue;
                             }
                             funcList[name] = true;
@@ -171,10 +101,11 @@ const handleUpdate = function() {
                 }
             });
 
-            func(newEnv, customWindow, p);
+            func(newEnv, customWindow.window, p);
 
             Object.keys(newEnv).forEach(name => {
                 const value = newEnv[name];
+
                 if (typeof value === 'object') {
                     const hash = md5(JSON.stringify(value));
 
@@ -185,14 +116,19 @@ const handleUpdate = function() {
                     if (archive[name] === hash) {
                         newEnv[name] = env[name];
                     } else {
-                        archive[name] = hash;
                         env[name] = newEnv[name];
+                        archive[name] = hash;
                     }
                 } else if (typeof value === 'function') {
-                    // remove the function if it wasn't defined during
-                    // the most recent run
-                    if (!funcList[name]) {
-                        delete archive[name];
+                    if (archive.hasOwnProperty(name)) {
+                        // if the function is in the archive but we didn't
+                        // define the last time the code changed delete it
+                        if (!funcList[name]) {
+                            delete archive[name];
+                        }
+                    } else {
+                        // if the function isn't in the archive add it
+                        archive[name] = value;
                     }
                 }
             });
@@ -206,4 +142,7 @@ const handleUpdate = function() {
 
 fetch('example_2.js')
     .then(res => res.text())
-    .then(code => loadCode(code));
+    .then(code => {
+        editor.setValue(code);
+        editor.on("input", handleUpdate);
+    });
