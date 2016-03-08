@@ -20,6 +20,11 @@ used by live-editor.
 - prevent introspection of rewritten code by forcing .toString() to return 
   original user code for functions
 
+### Error Handling
+
+- all exceptions are caught automatically in all user code including callbacks 
+  and event handlers.
+
 ## TODO
 
 - allow locals to shadow global variables
@@ -31,3 +36,4 @@ used by live-editor.
   programmatically
 - handle processing-js specific issues in a generalizable way
 - automatically handle cleanup of timers and intervals
+- give users feedback whenever an exception happens with the location if possible
