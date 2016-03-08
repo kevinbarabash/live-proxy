@@ -5,6 +5,8 @@ Live reloading for JavaScript + sand boxing.
 The purpose of this library is to eventually replace the live reload mechanism
 used by live-editor.
 
+[Demo](https://kevinbarabash.github.io/live-proxy)
+
 ## Features
 
 ### Reloading
