@@ -9,10 +9,12 @@ var y = 50;
 var Dot = function(x, y) {
     this.x = x;
     this.y = y;
+    this.color = color(random(255), random(255), random(255));
 };
 
 Dot.prototype.draw = function() {
     var d = 50;
+    fill(this.color);
     ellipse(this.x, this.y, d, d);
 };
 

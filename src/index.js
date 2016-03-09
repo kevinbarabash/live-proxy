@@ -115,6 +115,10 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 };
 
 
+// TODO: provide a hook to reset the seed for manual restarts of the program
+var seed = Math.floor(Math.random() * 4294967296);
+
+
 const handleUpdate = function() {
     var code = editor.getValue();
 
@@ -140,7 +144,12 @@ const handleUpdate = function() {
 
             injectFunctions(newContext, funcList);
 
+            // TODO: provide a hook to reset state here
+            p.randomSeed(seed);
+
             func(newContext, customWindow.window, p);
+
+            // TODO: provide a hook to capture state here
 
             updateEnvironments(persistentContext, newContext, funcList);
 
