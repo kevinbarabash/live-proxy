@@ -17,6 +17,8 @@ const p = new Processing(canvas, (processing) => {
 // Persists objects between code changes and re-runs of the code.
 const persistentContext = {};
 
+let context = {};
+
 // The key is the object's identifier.  The object is stringified right (and
 // hashed) after the main body of the user code is run.  If the hashes match
 // then that means that the main body didn't do anything different when creating
@@ -55,6 +57,7 @@ const injectFunctions = function(newContext, funcList) {
         const value = persistentContext[name];
 
         if (typeof value === 'function') {
+            // delete methods on the function so that they can be redefined
             Object.keys(value.prototype).forEach(key => {
                 delete value.prototype[key];
             });
@@ -83,7 +86,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
     Object.keys(newContext).forEach(name => {
         const value = newContext[name];
 
-        if (typeof value === 'object') {
+        if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
             const hash = md5(JSON.stringify(value));
 
             // Even though we don't do modify newContext directly, the objects
@@ -138,27 +141,39 @@ const handleUpdate = function() {
             const transformedCode = transform(code, p, customWindow.window);
             window.transformedCode = transformedCode;
 
-            const func = new Function('__env__', 'customWindow', 'p', transformedCode);
-            const newContext = {};
-            const funcList = {};    // functions being defined during this run
+            // grab the current values before re-running the function
+            Object.keys(context).forEach(name => {
+                const value = context[name];
+                if (typeof value === 'number' || typeof value === 'string' || typeof value === 'object') {
+                    persistentContext[name] = value;
+                }
+            });
 
-            injectFunctions(newContext, funcList);
+            const func = new Function('__env__', 'customWindow', 'p', 'displayException', transformedCode);
+            // TODO: expand funcList to include all data types
+            const funcList = {};    // functions being defined during this run
+            context = {};
+
+            injectFunctions(context, funcList);
 
             // TODO: provide a hook to reset state here
             p.randomSeed(seed);
+            // TODO: only clear the background if there's a draw function
+            p.background(255);
 
             eventHandlers.forEach(eventName => {
                 p[eventName] = DUMMY;
             });
 
-            func(newContext, customWindow.window, p);
+            func(context, customWindow.window, p, displayException);
 
             // TODO: provide a hook to capture state here
 
-            updateEnvironments(persistentContext, newContext, funcList);
+            updateEnvironments(persistentContext, context, funcList);
 
             canvas.style.opacity = 1.0;
         } catch(e) {
+            displayException(e);
             canvas.style.opacity = 0.5;
         }
     }
@@ -171,6 +186,13 @@ const displayLint = function(messages) {
     messageContainer.innerHTML = messages.map(message => {
         return `${message.message} on line ${message.line - 2} column ${message.column}<BR>`;
     }).join('');
+};
+
+
+const displayException = function(e) {
+    const messageContainer = document.querySelector('#messages');
+
+    messageContainer.innerHTML = `${e.name}: ${e.message}`;
 };
 
 

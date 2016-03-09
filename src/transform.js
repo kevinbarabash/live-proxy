@@ -244,7 +244,14 @@ const transform = function(code, libraryObject, customWindow) {
                 // TODO: don't swallow exception, call a global method to report the error
                 node.body = b.BlockStatement([
                     b.TryStatement(body,
-                        b.CatchClause(b.Identifier('e'), b.BlockStatement([]))
+                        b.CatchClause(b.Identifier('e'), b.BlockStatement([
+                            b.CallExpression(
+                                b.Identifier('displayException'),
+                                [
+                                    b.Identifier('e')
+                                ]
+                            )
+                        ]))
                     )
                 ]);
 

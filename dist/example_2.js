@@ -5,6 +5,7 @@ console.log(win);
 
 var x = 13;
 var y = 50;
+var d = 50;
 
 var Dot = function(x, y) {
     this.x = x;
@@ -12,10 +13,12 @@ var Dot = function(x, y) {
     this.color = color(random(255), random(255), random(255));
 };
 
+var t = 0;
+
 Dot.prototype.draw = function() {
-    var d = 50;
+    var orbitSize = 25;
     fill(this.color);
-    ellipse(this.x, this.y, d, d);
+    ellipse(this.x + orbitSize * cos(t), this.y + orbitSize * sin(t), d, d);
 };
 
 var dots = [];
@@ -23,6 +26,8 @@ var dots = [];
 dots.push(new Dot(100, 100));
 
 draw = function() {
+    t += 0.01;
+
     background(255, 255, 255);
     dots.forEach(function(dot) {
         dot.draw();
