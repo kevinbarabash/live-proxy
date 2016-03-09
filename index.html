@@ -18,10 +18,21 @@
             flex-grow: 1;
         }
 
-        #canvas {
+        #canvas-container {
+            position: relative;
             flex-shrink: 0;
             border-left: solid 1px lightgray;
             width: 512px;
+        }
+
+        :focus {
+            outline: none;
+        }
+
+        #messages {
+            position: absolute;
+            left: 0;
+            top: 0;
         }
     </style>
 </head>
@@ -33,7 +44,10 @@
 
 <div id="container">
     <div id="editor"></div>
-    <canvas id="canvas" width="512"></canvas>
+    <div id="canvas-container">
+        <canvas id="canvas" width="512"></canvas>
+        <div id="messages"></div>
+    </div>
 </div>
 
 <script>
