@@ -87,7 +87,9 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
         const value = newContext[name];
 
         if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
-            const hash = md5(JSON.stringify(value));
+            const hash = value === customWindow.window
+                ? 'customWindow'
+                : md5(JSON.stringify(value));
 
             // Even though we don't do modify newContext directly, the objects
             // it stores can be updated via callbacks and event handlers that
