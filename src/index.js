@@ -124,6 +124,46 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 var seed = Math.floor(Math.random() * 4294967296);
 var DUMMY = function() {};
 
+const resetState = function() {
+    p.randomSeed(seed);
+
+    eventHandlers.forEach(eventName => {
+        p[eventName] = DUMMY;
+    });
+
+    p.background(255, 255, 255);
+    p.colorMode(p.RGB);
+    p.ellipseMode(p.CENTER);
+    p.fill(255, 255, 255);
+    p.frameRate(60);
+    p.imageMode(p.CORNER);
+    p.rectMode(p.CORNER);
+    p.stroke(0, 0, 0);
+    p.strokeCap(p.ROUND);
+    p.strokeWeight(1);
+
+    // p.textAlign(37, 0);
+    // p.textAscent(9);
+    // p.textDescent(12);
+    // p.textFont("Arial", 12);
+    // p.textLeading(14);
+    // p.textSize(1);
+};
+
+const captureState = function() {
+    // TODO: wrap processing methods to capture parameters to these functions
+    // p.background(255, 255, 255);
+    // p.colorMode(p.RGB);
+    // p.ellipseMode(p.CENTER);
+    // p.fill(255, 255, 255);
+    // p.frameRate(60);
+    // p.imageMode(p.CORNER);
+    // p.rectMode(p.CORNER);
+    // p.stroke(0, 0, 0);
+    // p.strokeCap(p.ROUND);
+    // p.strokeWeight(1);
+};
+
 const handleUpdate = function() {
     var code = editor.getValue();
 
@@ -158,18 +198,11 @@ const handleUpdate = function() {
 
             injectFunctions(context, funcList);
 
-            // TODO: provide a hook to reset state here
-            p.randomSeed(seed);
-            // TODO: only clear the background if there's a draw function
-            p.background(255);
-
-            eventHandlers.forEach(eventName => {
-                p[eventName] = DUMMY;
-            });
+            resetState();
 
             func(context, customWindow.window, p, displayException);
 
-            // TODO: provide a hook to capture state here
+            captureState();
 
             updateEnvironments(persistentContext, context, funcList);
 
