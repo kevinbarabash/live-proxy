@@ -28,6 +28,16 @@ var isReference = function(node, parent) {
     return !isMemberExpression || isComputedProperty || isObject;
 };
 
+var getName = function(node) {
+    if (node.type === 'Identifier') {
+        return node.name;
+    } else if (node.type === 'MemberExpression') {
+        return `${getName(node.object)}.${getName(node.property)}`;
+    } else {
+        throw new Error(`getName doesn't handle ${node.type} yet`);
+    }
+};
+
 // TODO: allow an array of objects to pull global references from
 const transform = function(code, libraryObject, customWindow) {
     const ast = esprima.parse(code, { range: true });
@@ -78,7 +88,7 @@ const transform = function(code, libraryObject, customWindow) {
                         return;
                     }
 
-                    // Don't catch clause parameters.
+                    // Don't rewrite catch clause parameters.
                     if (parent.type === "CatchClause") {
                         return;
                     }
@@ -255,6 +265,14 @@ const transform = function(code, libraryObject, customWindow) {
                     )
                 ]);
 
+                if (parent && parent.type === 'AssignmentExpression') {
+                    const name = getName(parent.left);
+                    const parts = name.split('.');
+                    if (parts[0] === '__env__') {
+                        node.id = b.Identifier(parts[parts.length - 1]);
+                    }
+                }
+
                 return b.SequenceExpression([
                     b.AssignmentExpression(
                         b.Identifier('_'),
@@ -285,6 +303,13 @@ const transform = function(code, libraryObject, customWindow) {
                     b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')),
                     b.Identifier('customWindow'),
                     b.ThisExpression()
+                );
+            }
+
+            if (node.type === 'NewExpression') {
+                return b.CallExpression(
+                    b.Identifier('createObject'),
+                    [ node.callee, b.ArrayExpression(node.arguments) ]
                 );
             }
         }

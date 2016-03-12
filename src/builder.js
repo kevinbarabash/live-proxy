@@ -168,6 +168,13 @@ module.exports = {
         };
     },
 
+    ArrayExpression(elements) {
+        return {
+            type: "ArrayExpression",
+            elements: elements
+        };
+    },
+
     /**
      * @param {Array} declarations
      * @param {string} kind: "var", "let", "const"

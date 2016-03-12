@@ -244,16 +244,16 @@ const handleUpdate = function() {
                 }
             });
 
-            const func = new Function('__env__', 'customWindow', 'p', 'displayException', transformedCode);
+            const func = new Function('__env__', 'customWindow', 'p', 'displayException', 'createObject', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
 
-            injectFunctions(context, funcList);
+            // injectFunctions(context, funcList);
 
             beforeMain();
 
-            func(context, customWindow.window, p, displayException);
+            func(context, customWindow.window, p, displayException, createObject);
 
             afterMain();
 
@@ -283,6 +283,43 @@ const displayException = function(e) {
     messageContainer.innerHTML = `${e.name}: ${e.message}`;
 };
 
+const proxies = {};
+
+const createProxy = function(constructor) {
+    let currentConstructor = constructor;
+
+    const ProxyClass = new Function('getCurrentConstructor',
+        `return function() { return getCurrentConstructor().apply(this, arguments); }`
+    )(() => currentConstructor);
+
+    ProxyClass.prototype = constructor.prototype;
+
+    ProxyClass.update = function(newConstructor) {
+        currentConstructor = newConstructor;
+
+        // copy over new methods because they reference variables from
+        // the new context
+        Object.keys(newConstructor.prototype).forEach(name => {
+            ProxyClass.prototype[name] = newConstructor.prototype[name];
+        });
+    };
+
+    return ProxyClass;
+};
+
+// TODO: handle updates by modifying constructors on __env__ to be getters/setters
+// update injectFunctions to deal with the fact that we're using proxies now
+const createObject = function(constructor, args) {
+    if (!proxies.hasOwnProperty(constructor.name)) {
+        proxies[constructor.name] = createProxy(constructor);
+    } else {
+        proxies[constructor.name].update(constructor);
+    }
+    const proxy = proxies[constructor.name];
+    const obj = Object.create(proxy.prototype);
+    proxy.apply(obj, args);
+    return obj;
+};
 
 fetch('example_2.js')
     .then(res => res.text())
