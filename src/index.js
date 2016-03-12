@@ -107,32 +107,30 @@ const pGlobals = "/*global " +
     "*/\n";
 
 
-const injectFunctions = function(newContext, funcList) {
-    Object.keys(persistentContext).forEach(name => {
-        const value = persistentContext[name];
+const injectProxies = function(context, funcList) {
+    Object.keys(proxies).forEach(name => {
+        const proxy = proxies[name];
 
-        if (typeof value === 'function') {
-            // delete methods on the function so that they can be redefined
-            Object.keys(value.prototype).forEach(key => {
-                delete value.prototype[key];
-            });
+        // TODO: track which methods were added while running main vs ones that were added after the fact
+        // For now we delete all method before running main so only the ones
+        // are adding during main get added back in
+        Object.keys(proxy.prototype).forEach(name => {
+            delete proxy.prototype[name];
+        });
 
-            Object.defineProperty(newContext, name, {
-                enumerable: true,
-                get() {
-                    return funcList[name] ? value : undefined;
-                },
-                set(newValue) {
-                    if (newValue.toString() !== value.toString()) {
-                        // TODO: re-run the whole thing
-                        // if there are no objects created by calling the
-                        // constructor then we don't have to rerun anything
-                        persistentContext[name] = newValue;
-                    }
-                    funcList[name] = true;
+        Object.defineProperty(context, name, {
+            enumerable: true,
+            get() {
+                return funcList[name] ? proxy : undefined;
+            },
+            set(newConstructor) {
+                if (funcList[name]) {
+                    // TODO: warn that constructors shouldn't be redefined
                 }
-            });
-        }
+                proxy.update(newConstructor);
+                funcList[name] = true;
+            }
+        });
     });
 };
 
@@ -144,7 +142,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
         if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
             const hash = value === customWindow.window
                 ? 'customWindow'
-                : objectHash(value);
+                : objectHash(value, { respectType: false });
 
             // Even though we don't do modify newContext directly, the objects
             // it stores can be updated via callbacks and event handlers that
@@ -249,7 +247,7 @@ const handleUpdate = function() {
             const funcList = {};    // functions being defined during this run
             context = {};
 
-            // injectFunctions(context, funcList);
+            injectProxies(context, funcList);
 
             beforeMain();
 
@@ -307,17 +305,19 @@ const createProxy = function(constructor) {
     return ProxyClass;
 };
 
-// TODO: handle updates by modifying constructors on __env__ to be getters/setters
-// update injectFunctions to deal with the fact that we're using proxies now
 const createObject = function(constructor, args) {
+    // only create a proxy for a class when constructing the first instance
     if (!proxies.hasOwnProperty(constructor.name)) {
+        // TODO: redefine the constructor to be a getter/setting on context object
+        // This will handle an edge case where the users creates an object and
+        // then redefined the class in the first run of the program.
         proxies[constructor.name] = createProxy(constructor);
-    } else {
-        proxies[constructor.name].update(constructor);
     }
+
     const proxy = proxies[constructor.name];
     const obj = Object.create(proxy.prototype);
     proxy.apply(obj, args);
+
     return obj;
 };
 
