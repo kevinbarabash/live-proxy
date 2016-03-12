@@ -1,5 +1,3 @@
-const hash = require('object-hash');
-
 const transform = require('./transform');
 const customWindow = require('./custom-window');
 
@@ -144,9 +142,9 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
         const value = newContext[name];
 
         if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
-            const objectHash = value === customWindow.window
+            const hash = value === customWindow.window
                 ? 'customWindow'
-                : hash(value);
+                : objectHash(value);
 
             // Even though we don't do modify newContext directly, the objects
             // it stores can be updated via callbacks and event handlers that
@@ -155,11 +153,11 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
             // long as the hashes match it's safe to replace the object in the
             // new context with the one that's been accumulating changes from
             // the persisten context.
-            if (objectHashes[name] === objectHash) {
+            if (objectHashes[name] === hash) {
                 newContext[name] = persistentContext[name];
             } else {
                 persistentContext[name] = newContext[name];
-                objectHashes[name] = objectHash;
+                objectHashes[name] = hash;
             }
         } else if (typeof value === 'function') {
             if (persistentContext.hasOwnProperty(name)) {

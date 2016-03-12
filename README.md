@@ -13,16 +13,18 @@ used by live-editor.
 
 - only re-initialize objects when the code that initialized them changes
 - handles prototype style classes
+- handles objects containing cycles
+- handles saving/restoring global state in Processing-js in a generalizable way
 
 ### Sand Boxing
 
 - rewrite user code that access window to access a custom window-like object
-- prevent introspection of rewritten code by forcing .toString() to return 
+- prevent introspection of rewritten code by forcing .toString() to return
   original user code for functions
 
 ### Error Handling
 
-- all exceptions are caught automatically in all user code including callbacks 
+- all exceptions are caught automatically in all user code including callbacks
   and event handlers.
 
 ## TODO
@@ -34,6 +36,5 @@ used by live-editor.
 - proper event handling in iframes
 - wrap document.createElement to prevent creation of other iframes or scripts
   programmatically
-- handle processing-js specific issues in a generalizable way
 - automatically handle cleanup of timers and intervals
 - give users feedback whenever an exception happens with the location if possible
