@@ -1,4 +1,4 @@
-const md5 = require('blueimp-md5');
+const hash = require('object-hash');
 
 const transform = require('./transform');
 const customWindow = require('./custom-window');
@@ -34,7 +34,6 @@ const compare = function(obj1, obj2) {
 };
 
 const state = {
-    background: [255, 255, 255],
     colorMode: [p.RGB],
     ellipseMode: [p.CENTER],
     fill: [255, 255, 255],
@@ -145,9 +144,9 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
         const value = newContext[name];
 
         if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
-            const hash = value === customWindow.window
+            const objectHash = value === customWindow.window
                 ? 'customWindow'
-                : md5(JSON.stringify(value));
+                : hash(value);
 
             // Even though we don't do modify newContext directly, the objects
             // it stores can be updated via callbacks and event handlers that
@@ -156,11 +155,11 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
             // long as the hashes match it's safe to replace the object in the
             // new context with the one that's been accumulating changes from
             // the persisten context.
-            if (objectHashes[name] === hash) {
+            if (objectHashes[name] === objectHash) {
                 newContext[name] = persistentContext[name];
             } else {
                 persistentContext[name] = newContext[name];
-                objectHashes[name] = hash;
+                objectHashes[name] = objectHash;
             }
         } else if (typeof value === 'function') {
             if (persistentContext.hasOwnProperty(name)) {

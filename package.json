@@ -17,10 +17,10 @@
   },
   "homepage": "https://github.com/kevinbarabash/live-proxy#readme",
   "dependencies": {
-    "blueimp-md5": "^2.3.0",
     "escodegen": "^1.8.0",
     "eslint": "^2.3.0",
-    "esprima": "^2.7.2"
+    "esprima": "^2.7.2",
+    "object-hash": "^1.1.2"
   },
   "devDependencies": {
     "browserify": "^13.0.0",
