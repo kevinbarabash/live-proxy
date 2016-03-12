@@ -25,6 +25,8 @@ var dots = [];
 
 dots.push(new Dot(100, 100));
 
+strokeWeight(1);
+
 draw = function() {
     t += 0.01;
 
@@ -35,5 +37,6 @@ draw = function() {
 };
 
 mouseClicked = function() {
+    strokeWeight(random(20));
     dots.push(new Dot(mouseX, mouseY));
 };

@@ -13,6 +13,64 @@ const p = new Processing(canvas, (processing) => {
     processing.draw = function () {};
 });
 
+const stateModifiers = [
+    'colorMode',
+    'ellipseMode',
+    'fill',
+    'frameRate',
+    'imageMode',
+    'rectMode',
+    'stroke',
+    'strokeCap',
+    'strokeWeight'
+];
+
+const clone = function(obj) {
+    return JSON.parse(JSON.stringify(obj));
+};
+
+const compare = function(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+};
+
+const state = {
+    background: [255, 255, 255],
+    colorMode: [p.RGB],
+    ellipseMode: [p.CENTER],
+    fill: [255, 255, 255],
+    frameRate: [60],
+    imageMode: [p.CORNER],
+    rectMode: [p.CORNER],
+    stroke: [0, 0, 0],
+    strokeCap: [p.ROUND],
+    strokeWeight: [1],
+};
+
+// the snapshot is always the value of the state after running main
+const snapshot = clone(state);
+const defaultState = clone(state);
+const beforeState = {};
+const afterState = {};
+
+stateModifiers.forEach(name => {
+    let func = p[name];
+
+    Object.defineProperty(p, name,  {
+        get() {
+            return (...args) => {
+                // TODO: instead of toggling record... we can just grab the state at a particular point in time
+                // we want to be able to take snapshots of state a different times
+                // compare those snapshots and update the current state appropriately
+                state[name] = args;
+                func.apply(p, args);
+            };
+        },
+        set(value) {
+            func = value;
+        }
+    });
+});
+
 
 // Persists objects between code changes and re-runs of the code.
 const persistentContext = {};
@@ -124,23 +182,20 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 var seed = Math.floor(Math.random() * 4294967296);
 var DUMMY = function() {};
 
-const resetState = function() {
+const beforeMain = function() {
     p.randomSeed(seed);
 
     eventHandlers.forEach(eventName => {
         p[eventName] = DUMMY;
     });
 
-    p.background(255, 255, 255);
-    p.colorMode(p.RGB);
-    p.ellipseMode(p.CENTER);
-    p.fill(255, 255, 255);
-    p.frameRate(60);
-    p.imageMode(p.CORNER);
-    p.rectMode(p.CORNER);
-    p.stroke(0, 0, 0);
-    p.strokeCap(p.ROUND);
-    p.strokeWeight(1);
+    // capture state before main so that we can restore if after running main
+    Object.assign(beforeState, clone(state));
+
+    // reset state to handle deleting of state changing commands
+    stateModifiers.forEach(name => {
+        p[name](...defaultState[name]);
+    });
 
     // p.textAlign(37, 0);
     // p.textAscent(9);
@@ -150,18 +205,19 @@ const resetState = function() {
     // p.textSize(1);
 };
 
-const captureState = function() {
-    // TODO: wrap processing methods to capture parameters to these functions
-    // p.background(255, 255, 255);
-    // p.colorMode(p.RGB);
-    // p.ellipseMode(p.CENTER);
-    // p.fill(255, 255, 255);
-    // p.frameRate(60);
-    // p.imageMode(p.CORNER);
-    // p.rectMode(p.CORNER);
-    // p.stroke(0, 0, 0);
-    // p.strokeCap(p.ROUND);
-    // p.strokeWeight(1);
+const afterMain = function() {
+    Object.assign(afterState, clone(state));
+
+    // maintain invariant: snapshot is always the state after running main
+    stateModifiers.forEach(name => {
+        if (compare(snapshot[name], afterState[name])) {
+            // update the state by calling the state modifying function
+            p[name](...beforeState[name]);
+        } else {
+            // update the snapshot
+            snapshot[name] = afterState[name];
+        }
+    });
 };
 
 const handleUpdate = function() {
@@ -198,11 +254,11 @@ const handleUpdate = function() {
 
             injectFunctions(context, funcList);
 
-            resetState();
+            beforeMain();
 
             func(context, customWindow.window, p, displayException);
 
-            captureState();
+            afterMain();
 
             updateEnvironments(persistentContext, context, funcList);
 
