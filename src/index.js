@@ -24,6 +24,20 @@ const stateModifiers = [
     'strokeWeight'
 ];
 
+const eventHandlers = [
+    "draw",
+    "mouseClicked",
+    "mousePressed",
+    "mouseReleased",
+    "mouseMoved",
+    "mouseDragged",
+    "mouseOver",
+    "mouseOut",
+    "keyPressed",
+    "keyReleased",
+    "keyTyped"
+];
+
 const clone = function(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
@@ -69,6 +83,26 @@ stateModifiers.forEach(name => {
     });
 });
 
+eventHandlers.forEach(name => {
+    let value = undefined;
+    Object.defineProperty(p, name, {
+        get() {
+            return value;
+        },
+        set(newValue) {
+            value = function() {
+                try {
+                    newValue.apply(p, arguments);
+                } catch(e) {
+                    displayException(e);
+                }
+            };
+        }
+    });
+});
+
+p.draw = function () {};
+
 
 // Persists objects between code changes and re-runs of the code.
 const persistentContext = {};
@@ -84,21 +118,6 @@ let context = {};
 // TODO: figure out how to save space if multiple identifiers point to the same object
 const objectHashes = {};
 
-
-
-const eventHandlers = [
-    "draw",
-    "mouseClicked",
-    "mousePressed",
-    "mouseReleased",
-    "mouseMoved",
-    "mouseDragged",
-    "mouseOver",
-    "mouseOut",
-    "keyPressed",
-    "keyReleased",
-    "keyTyped"
-];
 
 const props = [];
 // processing object's have multiple levels in their hierarchy and we want to
