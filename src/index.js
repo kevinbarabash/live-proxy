@@ -1,6 +1,6 @@
 const transform = require('./transform');
 const customWindow = require('./custom-window');
-
+const objectHash = require('object-hash');
 
 const canvas = document.getElementById("canvas");
 
@@ -10,6 +10,8 @@ const p = new Processing(canvas, (processing) => {
 
     processing.draw = function () {};
 });
+
+window.p = p;
 
 const stateModifiers = [
     'colorMode',
@@ -99,8 +101,15 @@ const eventHandlers = [
     "keyTyped"
 ];
 
+const props = [];
+// processing object's have multiple levels in their hierarchy and we want to
+// get all of the properties so we use for-in here
+for (const prop in p) {
+    props.push(prop);
+}
+
 const pGlobals = "/*global " +
-    Object.keys(p)
+    props
         .filter(key => !(key[0] === '_' && key[1] === '_'))
         .map(key => eventHandlers.includes(key) ? `${key}:true` : key)
         .join(" ") +
@@ -142,8 +151,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
         if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
             const hash = value === customWindow.window
                 ? 'customWindow'
-                // it's okay to add/delete methods on the prototype
-                : objectHash(value, { respectType: false });
+                : objectHash(value, { respectType: false, ignoreUnknown: true });
 
             // Even though we don't do modify newContext directly, the objects
             // it stores can be updated via callbacks and event handlers that
@@ -180,6 +188,9 @@ var DUMMY = function() {};
 
 const beforeMain = function() {
     p.randomSeed(seed);
+
+    // TODO: figure out a good way to track this state along with the rest
+    p.angleMode = 'degrees';
 
     eventHandlers.forEach(eventName => {
         p[eventName] = DUMMY;
@@ -243,10 +254,11 @@ const handleUpdate = function() {
                 }
             });
 
-            const func = new Function('__env__', 'customWindow', 'p', 'displayException', 'createObject', transformedCode);
+            const func = new Function('__env__', 'customWindow', '__p__', 'displayException', 'createObject', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
+            window.context = context;
 
             injectProxies(context, funcList);
 
@@ -287,11 +299,15 @@ const proxies = {};
 const createProxy = function(constructor) {
     let currentConstructor = constructor;
 
+    // ProxyClasses need a name, ensure that we don't create an anonymous function here
+    // The name is used in createObject.
     const ProxyClass = new Function('getCurrentConstructor',
-        `return function() { return getCurrentConstructor().apply(this, arguments); }`
+        `return function ${constructor.name}() { return getCurrentConstructor().apply(this, arguments); }`
     )(() => currentConstructor);
 
-    ProxyClass.prototype = constructor.prototype;
+    Object.keys(constructor.prototype).forEach(name => {
+        ProxyClass.prototype[name] = constructor.prototype[name];
+    });
 
     ProxyClass.update = function(newConstructor) {
         currentConstructor = newConstructor;

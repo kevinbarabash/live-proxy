@@ -112,7 +112,7 @@ const transform = function(code, libraryObject, customWindow) {
                     // in it have precedence over customWindow.
                     if (node.name in libraryObject && scopeIndex === -1) {
                         return b.MemberExpression(
-                            b.Identifier('p'), b.Identifier(node.name));
+                            b.Identifier('__p__'), b.Identifier(node.name));
                     }
 
                     // TODO: figure out how to track values added to window
