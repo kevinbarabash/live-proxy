@@ -50,6 +50,7 @@ const transform = function(code, libraryObject, customWindow) {
     const globals = {};
 
     let scopes = [globals];
+    let currentFunction = null;
 
     const envName = '__env__';
 
@@ -63,6 +64,7 @@ const transform = function(code, libraryObject, customWindow) {
                     scope[param.name] = true;
                 });
                 scopes.push(scope);
+                currentFunction = node;
             }
             // Add any variables declared to the current scope.  This handles
             // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
@@ -241,6 +243,10 @@ const transform = function(code, libraryObject, customWindow) {
                 // Remove all local variables from the scopes stack as we exit
                 // the function expression/declaration.
                 scopes.pop();
+                currentFunction = node;
+            } else if (node.type === 'ThisExpression') {
+                currentFunction.usesThis = true;
+                return b.Identifier('_this');
             }
         }
     });
@@ -252,6 +258,26 @@ const transform = function(code, libraryObject, customWindow) {
         leave(node, parent) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
+
+                if (node.usesThis) {
+                    body.body.unshift(
+                        b.ExpressionStatement(
+                            b.AssignmentExpression(
+                                b.Identifier('_this'),
+                                '=',
+                                b.ConditionalExpression(
+                                    b.BinaryExpression(
+                                        b.ThisExpression(),
+                                        '===',
+                                        b.Identifier('window')
+                                    ),
+                                    b.Identifier('customWindow'),
+                                    b.ThisExpression()
+                                )
+                            )
+                        )
+                    );
+                }
 
                 // TODO: don't swallow exception, call a global method to report the error
                 node.body = b.BlockStatement([
@@ -294,18 +320,6 @@ const transform = function(code, libraryObject, customWindow) {
                     ),
                     b.Identifier('_')
                 ]);
-            }
-        }
-    });
-
-    estraverse.replace(ast, {
-        leave(node, parent) {
-            if (node.type === 'ThisExpression') {
-                return b.ConditionalExpression(
-                    b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')),
-                    b.Identifier('customWindow'),
-                    b.ThisExpression()
-                );
             }
         }
     });
