@@ -1,5 +1,4 @@
-
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js":[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (process,__filename){
 /** vim: et:ts=4:sw=4:sts=4
  * @license amdefine 1.0.0 Copyright (c) 2011-2015, The Dojo Foundation All Rights Reserved.
@@ -304,288 +303,7 @@ function amdefine(module, requireFn) {
 module.exports = amdefine;
 
 }).call(this,require('_process'),"/node_modules/amdefine/amdefine.js")
-},{"_process":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js","path":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/path-browserify/index.js"}],"/Users/kevin/live-proxy/node_modules/blueimp-md5/js/md5.js":[function(require,module,exports){
-/*
- * JavaScript MD5
- * https://github.com/blueimp/JavaScript-MD5
- *
- * Copyright 2011, Sebastian Tschan
- * https://blueimp.net
- *
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/MIT
- *
- * Based on
- * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
- * Digest Algorithm, as defined in RFC 1321.
- * Version 2.2 Copyright (C) Paul Johnston 1999 - 2009
- * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
- * Distributed under the BSD License
- * See http://pajhome.org.uk/crypt/md5 for more info.
- */
-
-/*global unescape, define, module */
-
-;(function ($) {
-  'use strict'
-
-  /*
-  * Add integers, wrapping at 2^32. This uses 16-bit operations internally
-  * to work around bugs in some JS interpreters.
-  */
-  function safe_add (x, y) {
-    var lsw = (x & 0xFFFF) + (y & 0xFFFF)
-    var msw = (x >> 16) + (y >> 16) + (lsw >> 16)
-    return (msw << 16) | (lsw & 0xFFFF)
-  }
-
-  /*
-  * Bitwise rotate a 32-bit number to the left.
-  */
-  function bit_rol (num, cnt) {
-    return (num << cnt) | (num >>> (32 - cnt))
-  }
-
-  /*
-  * These functions implement the four basic operations the algorithm uses.
-  */
-  function md5_cmn (q, a, b, x, s, t) {
-    return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s), b)
-  }
-  function md5_ff (a, b, c, d, x, s, t) {
-    return md5_cmn((b & c) | ((~b) & d), a, b, x, s, t)
-  }
-  function md5_gg (a, b, c, d, x, s, t) {
-    return md5_cmn((b & d) | (c & (~d)), a, b, x, s, t)
-  }
-  function md5_hh (a, b, c, d, x, s, t) {
-    return md5_cmn(b ^ c ^ d, a, b, x, s, t)
-  }
-  function md5_ii (a, b, c, d, x, s, t) {
-    return md5_cmn(c ^ (b | (~d)), a, b, x, s, t)
-  }
-
-  /*
-  * Calculate the MD5 of an array of little-endian words, and a bit length.
-  */
-  function binl_md5 (x, len) {
-    /* append padding */
-    x[len >> 5] |= 0x80 << (len % 32)
-    x[(((len + 64) >>> 9) << 4) + 14] = len
-
-    var i
-    var olda
-    var oldb
-    var oldc
-    var oldd
-    var a = 1732584193
-    var b = -271733879
-    var c = -1732584194
-    var d = 271733878
-
-    for (i = 0; i < x.length; i += 16) {
-      olda = a
-      oldb = b
-      oldc = c
-      oldd = d
-
-      a = md5_ff(a, b, c, d, x[i], 7, -680876936)
-      d = md5_ff(d, a, b, c, x[i + 1], 12, -389564586)
-      c = md5_ff(c, d, a, b, x[i + 2], 17, 606105819)
-      b = md5_ff(b, c, d, a, x[i + 3], 22, -1044525330)
-      a = md5_ff(a, b, c, d, x[i + 4], 7, -176418897)
-      d = md5_ff(d, a, b, c, x[i + 5], 12, 1200080426)
-      c = md5_ff(c, d, a, b, x[i + 6], 17, -1473231341)
-      b = md5_ff(b, c, d, a, x[i + 7], 22, -45705983)
-      a = md5_ff(a, b, c, d, x[i + 8], 7, 1770035416)
-      d = md5_ff(d, a, b, c, x[i + 9], 12, -1958414417)
-      c = md5_ff(c, d, a, b, x[i + 10], 17, -42063)
-      b = md5_ff(b, c, d, a, x[i + 11], 22, -1990404162)
-      a = md5_ff(a, b, c, d, x[i + 12], 7, 1804603682)
-      d = md5_ff(d, a, b, c, x[i + 13], 12, -40341101)
-      c = md5_ff(c, d, a, b, x[i + 14], 17, -1502002290)
-      b = md5_ff(b, c, d, a, x[i + 15], 22, 1236535329)
-
-      a = md5_gg(a, b, c, d, x[i + 1], 5, -165796510)
-      d = md5_gg(d, a, b, c, x[i + 6], 9, -1069501632)
-      c = md5_gg(c, d, a, b, x[i + 11], 14, 643717713)
-      b = md5_gg(b, c, d, a, x[i], 20, -373897302)
-      a = md5_gg(a, b, c, d, x[i + 5], 5, -701558691)
-      d = md5_gg(d, a, b, c, x[i + 10], 9, 38016083)
-      c = md5_gg(c, d, a, b, x[i + 15], 14, -660478335)
-      b = md5_gg(b, c, d, a, x[i + 4], 20, -405537848)
-      a = md5_gg(a, b, c, d, x[i + 9], 5, 568446438)
-      d = md5_gg(d, a, b, c, x[i + 14], 9, -1019803690)
-      c = md5_gg(c, d, a, b, x[i + 3], 14, -187363961)
-      b = md5_gg(b, c, d, a, x[i + 8], 20, 1163531501)
-      a = md5_gg(a, b, c, d, x[i + 13], 5, -1444681467)
-      d = md5_gg(d, a, b, c, x[i + 2], 9, -51403784)
-      c = md5_gg(c, d, a, b, x[i + 7], 14, 1735328473)
-      b = md5_gg(b, c, d, a, x[i + 12], 20, -1926607734)
-
-      a = md5_hh(a, b, c, d, x[i + 5], 4, -378558)
-      d = md5_hh(d, a, b, c, x[i + 8], 11, -2022574463)
-      c = md5_hh(c, d, a, b, x[i + 11], 16, 1839030562)
-      b = md5_hh(b, c, d, a, x[i + 14], 23, -35309556)
-      a = md5_hh(a, b, c, d, x[i + 1], 4, -1530992060)
-      d = md5_hh(d, a, b, c, x[i + 4], 11, 1272893353)
-      c = md5_hh(c, d, a, b, x[i + 7], 16, -155497632)
-      b = md5_hh(b, c, d, a, x[i + 10], 23, -1094730640)
-      a = md5_hh(a, b, c, d, x[i + 13], 4, 681279174)
-      d = md5_hh(d, a, b, c, x[i], 11, -358537222)
-      c = md5_hh(c, d, a, b, x[i + 3], 16, -722521979)
-      b = md5_hh(b, c, d, a, x[i + 6], 23, 76029189)
-      a = md5_hh(a, b, c, d, x[i + 9], 4, -640364487)
-      d = md5_hh(d, a, b, c, x[i + 12], 11, -421815835)
-      c = md5_hh(c, d, a, b, x[i + 15], 16, 530742520)
-      b = md5_hh(b, c, d, a, x[i + 2], 23, -995338651)
-
-      a = md5_ii(a, b, c, d, x[i], 6, -198630844)
-      d = md5_ii(d, a, b, c, x[i + 7], 10, 1126891415)
-      c = md5_ii(c, d, a, b, x[i + 14], 15, -1416354905)
-      b = md5_ii(b, c, d, a, x[i + 5], 21, -57434055)
-      a = md5_ii(a, b, c, d, x[i + 12], 6, 1700485571)
-      d = md5_ii(d, a, b, c, x[i + 3], 10, -1894986606)
-      c = md5_ii(c, d, a, b, x[i + 10], 15, -1051523)
-      b = md5_ii(b, c, d, a, x[i + 1], 21, -2054922799)
-      a = md5_ii(a, b, c, d, x[i + 8], 6, 1873313359)
-      d = md5_ii(d, a, b, c, x[i + 15], 10, -30611744)
-      c = md5_ii(c, d, a, b, x[i + 6], 15, -1560198380)
-      b = md5_ii(b, c, d, a, x[i + 13], 21, 1309151649)
-      a = md5_ii(a, b, c, d, x[i + 4], 6, -145523070)
-      d = md5_ii(d, a, b, c, x[i + 11], 10, -1120210379)
-      c = md5_ii(c, d, a, b, x[i + 2], 15, 718787259)
-      b = md5_ii(b, c, d, a, x[i + 9], 21, -343485551)
-
-      a = safe_add(a, olda)
-      b = safe_add(b, oldb)
-      c = safe_add(c, oldc)
-      d = safe_add(d, oldd)
-    }
-    return [a, b, c, d]
-  }
-
-  /*
-  * Convert an array of little-endian words to a string
-  */
-  function binl2rstr (input) {
-    var i
-    var output = ''
-    for (i = 0; i < input.length * 32; i += 8) {
-      output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xFF)
-    }
-    return output
-  }
-
-  /*
-  * Convert a raw string to an array of little-endian words
-  * Characters >255 have their high-byte silently ignored.
-  */
-  function rstr2binl (input) {
-    var i
-    var output = []
-    output[(input.length >> 2) - 1] = undefined
-    for (i = 0; i < output.length; i += 1) {
-      output[i] = 0
-    }
-    for (i = 0; i < input.length * 8; i += 8) {
-      output[i >> 5] |= (input.charCodeAt(i / 8) & 0xFF) << (i % 32)
-    }
-    return output
-  }
-
-  /*
-  * Calculate the MD5 of a raw string
-  */
-  function rstr_md5 (s) {
-    return binl2rstr(binl_md5(rstr2binl(s), s.length * 8))
-  }
-
-  /*
-  * Calculate the HMAC-MD5, of a key and some data (raw strings)
-  */
-  function rstr_hmac_md5 (key, data) {
-    var i
-    var bkey = rstr2binl(key)
-    var ipad = []
-    var opad = []
-    var hash
-    ipad[15] = opad[15] = undefined
-    if (bkey.length > 16) {
-      bkey = binl_md5(bkey, key.length * 8)
-    }
-    for (i = 0; i < 16; i += 1) {
-      ipad[i] = bkey[i] ^ 0x36363636
-      opad[i] = bkey[i] ^ 0x5C5C5C5C
-    }
-    hash = binl_md5(ipad.concat(rstr2binl(data)), 512 + data.length * 8)
-    return binl2rstr(binl_md5(opad.concat(hash), 512 + 128))
-  }
-
-  /*
-  * Convert a raw string to a hex string
-  */
-  function rstr2hex (input) {
-    var hex_tab = '0123456789abcdef'
-    var output = ''
-    var x
-    var i
-    for (i = 0; i < input.length; i += 1) {
-      x = input.charCodeAt(i)
-      output += hex_tab.charAt((x >>> 4) & 0x0F) +
-      hex_tab.charAt(x & 0x0F)
-    }
-    return output
-  }
-
-  /*
-  * Encode a string as utf-8
-  */
-  function str2rstr_utf8 (input) {
-    return unescape(encodeURIComponent(input))
-  }
-
-  /*
-  * Take string arguments and return either raw or hex encoded strings
-  */
-  function raw_md5 (s) {
-    return rstr_md5(str2rstr_utf8(s))
-  }
-  function hex_md5 (s) {
-    return rstr2hex(raw_md5(s))
-  }
-  function raw_hmac_md5 (k, d) {
-    return rstr_hmac_md5(str2rstr_utf8(k), str2rstr_utf8(d))
-  }
-  function hex_hmac_md5 (k, d) {
-    return rstr2hex(raw_hmac_md5(k, d))
-  }
-
-  function md5 (string, key, raw) {
-    if (!key) {
-      if (!raw) {
-        return hex_md5(string)
-      }
-      return raw_md5(string)
-    }
-    if (!raw) {
-      return hex_hmac_md5(key, string)
-    }
-    return raw_hmac_md5(key, string)
-  }
-
-  if (typeof define === 'function' && define.amd) {
-    define(function () {
-      return md5
-    })
-  } else if (typeof module === 'object' && module.exports) {
-    module.exports = md5
-  } else {
-    $.md5 = md5
-  }
-}(this))
-
-},{}],"/Users/kevin/live-proxy/node_modules/escodegen/escodegen.js":[function(require,module,exports){
+},{"_process":25,"path":24}],2:[function(require,module,exports){
 (function (global){
 /*
   Copyright (C) 2012-2014 Yusuke Suzuki <utatane.tea@gmail.com>
@@ -3188,7 +2906,7 @@ module.exports = amdefine;
 /* vim: set sw=4 ts=4 et tw=80 : */
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./package.json":"/Users/kevin/live-proxy/node_modules/escodegen/package.json","estraverse":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/estraverse/estraverse.js","esutils":"/Users/kevin/live-proxy/node_modules/esutils/lib/utils.js","source-map":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/estraverse/estraverse.js":[function(require,module,exports){
+},{"./package.json":16,"estraverse":3,"esutils":23,"source-map":4}],3:[function(require,module,exports){
 /*
   Copyright (C) 2012-2013 Yusuke Suzuki <utatane.tea@gmail.com>
   Copyright (C) 2012 Ariya Hidayat <ariya.hidayat@gmail.com>
@@ -4035,7 +3753,7 @@ module.exports = amdefine;
 }));
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map.js":[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*
  * Copyright 2009-2011 Mozilla Foundation and contributors
  * Licensed under the New BSD license. See LICENSE.txt or:
@@ -4045,7 +3763,7 @@ exports.SourceMapGenerator = require('./source-map/source-map-generator').Source
 exports.SourceMapConsumer = require('./source-map/source-map-consumer').SourceMapConsumer;
 exports.SourceNode = require('./source-map/source-node').SourceNode;
 
-},{"./source-map/source-map-consumer":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-consumer.js","./source-map/source-map-generator":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-generator.js","./source-map/source-node":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-node.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/array-set.js":[function(require,module,exports){
+},{"./source-map/source-map-consumer":12,"./source-map/source-map-generator":13,"./source-map/source-node":14}],5:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4144,7 +3862,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/base64-vlq.js":[function(require,module,exports){
+},{"./util":15,"amdefine":1}],6:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4288,7 +4006,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./base64":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/base64.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/base64.js":[function(require,module,exports){
+},{"./base64":7,"amdefine":1}],7:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4332,7 +4050,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/basic-source-map-consumer.js":[function(require,module,exports){
+},{"amdefine":1}],8:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4754,7 +4472,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./array-set":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/array-set.js","./base64-vlq":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/base64-vlq.js","./binary-search":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/binary-search.js","./source-map-consumer":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-consumer.js","./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/binary-search.js":[function(require,module,exports){
+},{"./array-set":5,"./base64-vlq":6,"./binary-search":9,"./source-map-consumer":12,"./util":15,"amdefine":1}],9:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -4836,7 +4554,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/indexed-source-map-consumer.js":[function(require,module,exports){
+},{"amdefine":1}],10:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5141,7 +4859,7 @@ define(function (require, exports, module) {
   exports.IndexedSourceMapConsumer = IndexedSourceMapConsumer;
 });
 
-},{"./basic-source-map-consumer":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/basic-source-map-consumer.js","./binary-search":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/binary-search.js","./source-map-consumer":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-consumer.js","./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/mapping-list.js":[function(require,module,exports){
+},{"./basic-source-map-consumer":8,"./binary-search":9,"./source-map-consumer":12,"./util":15,"amdefine":1}],11:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2014 Mozilla Foundation and contributors
@@ -5229,7 +4947,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-consumer.js":[function(require,module,exports){
+},{"./util":15,"amdefine":1}],12:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5453,7 +5171,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./basic-source-map-consumer":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/basic-source-map-consumer.js","./indexed-source-map-consumer":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/indexed-source-map-consumer.js","./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-generator.js":[function(require,module,exports){
+},{"./basic-source-map-consumer":8,"./indexed-source-map-consumer":10,"./util":15,"amdefine":1}],13:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -5855,7 +5573,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./array-set":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/array-set.js","./base64-vlq":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/base64-vlq.js","./mapping-list":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/mapping-list.js","./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-node.js":[function(require,module,exports){
+},{"./array-set":5,"./base64-vlq":6,"./mapping-list":11,"./util":15,"amdefine":1}],14:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -6271,7 +5989,7 @@ define(function (require, exports, module) {
 
 });
 
-},{"./source-map-generator":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/source-map-generator.js","./util":"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js","amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/node_modules/source-map/lib/source-map/util.js":[function(require,module,exports){
+},{"./source-map-generator":13,"./util":15,"amdefine":1}],15:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
@@ -6592,8 +6310,8 @@ define(function (require, exports, module) {
 
 });
 
-},{"amdefine":"/Users/kevin/live-proxy/node_modules/amdefine/amdefine.js"}],"/Users/kevin/live-proxy/node_modules/escodegen/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+},{"amdefine":1}],16:[function(require,module,exports){
+module.exports={
   "_args": [
     [
       "escodegen",
@@ -6706,7 +6424,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
   "version": "1.8.0"
 }
 
-},{}],"/Users/kevin/live-proxy/node_modules/esprima/esprima.js":[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /*
   Copyright (c) jQuery Foundation, Inc. and Contributors, All Rights Reserved.
 
@@ -12447,7 +12165,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
 }));
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{}],"/Users/kevin/live-proxy/node_modules/estraverse/estraverse.js":[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /*
   Copyright (C) 2012-2013 Yusuke Suzuki <utatane.tea@gmail.com>
   Copyright (C) 2012 Ariya Hidayat <ariya.hidayat@gmail.com>
@@ -13292,8 +13010,8 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
 }(exports));
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{"./package.json":"/Users/kevin/live-proxy/node_modules/estraverse/package.json"}],"/Users/kevin/live-proxy/node_modules/estraverse/package.json":[function(require,module,exports){
-module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports=module.exports={
+},{"./package.json":19}],19:[function(require,module,exports){
+module.exports={
   "_args": [
     [
       "estraverse",
@@ -13389,7 +13107,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
   "version": "4.1.1"
 }
 
-},{}],"/Users/kevin/live-proxy/node_modules/esutils/lib/ast.js":[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /*
   Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
 
@@ -13535,7 +13253,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
 }());
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{}],"/Users/kevin/live-proxy/node_modules/esutils/lib/code.js":[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
   Copyright (C) 2013-2014 Yusuke Suzuki <utatane.tea@gmail.com>
   Copyright (C) 2014 Ivan Nikulin <ifaaan@gmail.com>
@@ -13672,7 +13390,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
 }());
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{}],"/Users/kevin/live-proxy/node_modules/esutils/lib/keyword.js":[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /*
   Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
 
@@ -13839,7 +13557,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
 }());
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{"./code":"/Users/kevin/live-proxy/node_modules/esutils/lib/code.js"}],"/Users/kevin/live-proxy/node_modules/esutils/lib/utils.js":[function(require,module,exports){
+},{"./code":21}],23:[function(require,module,exports){
 /*
   Copyright (C) 2013 Yusuke Suzuki <utatane.tea@gmail.com>
 
@@ -13874,702 +13592,7 @@ module.exports=module.exports=module.exports=module.exports=module.exports=modul
 }());
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{"./ast":"/Users/kevin/live-proxy/node_modules/esutils/lib/ast.js","./code":"/Users/kevin/live-proxy/node_modules/esutils/lib/code.js","./keyword":"/Users/kevin/live-proxy/node_modules/esutils/lib/keyword.js"}],"/Users/kevin/live-proxy/src/builder.js":[function(require,module,exports){
-module.exports = {
-    /**
-     * @param {Expression} left
-     * @param {string} operator: "=", "+=", "-=", "*=", "/=", etc.
-     * @param {Expression} right
-     */
-    AssignmentExpression(left, operator, right) {
-        return {
-            type: "AssignmentExpression",
-            left: left,
-            operator: operator,
-            right: right
-        };
-    },
-    /**
-     * @param {Expression} left
-     * @param {string} operator: "+", "-", "*", "/", "<", ">", "<=", ">=", etc.
-     * @param {Expression} right
-     */
-    BinaryExpression(left, operator, right) {
-        return {
-            type: "BinaryExpression",
-            left: left,
-            operator: operator,
-            right: right
-        };
-    },
-    /**
-     * @param {Array} body: an array of Expressions
-     */
-    BlockStatement(body) {
-        return {
-            type: "BlockStatement",
-            body: body
-        };
-    },
-    /**
-     * @param {Expression} callee
-     * @param {Array} args
-     */
-    CallExpression(callee, args) {
-        return {
-            type: "CallExpression",
-            callee: callee,
-            arguments: args
-        };
-    },
-    /**
-     * @param {Expression} expression
-     */
-    ExpressionStatement(expression) {
-        return {
-            type: "ExpressionStatement",
-            expression: expression
-        };
-    },
-    /**
-     * @param {string} name
-     */
-    Identifier(name) {
-        return {
-            type: "Identifier",
-            name: name
-        };
-    },
-    /**
-     * @param {Expression} test
-     * @param {Statement} consequent: usually a BlockStatement
-     * @param {Statement?} alternate: usually a BlockStatement when not omitted
-     */
-    IfStatement(test, consequent, alternate = null) {
-        return {
-            type: "IfStatement",
-            test: test,
-            consequent: consequent,
-            alternate: alternate
-        };
-    },
-    /**
-     * @param {Number|String|null|RegExp} value
-     */
-    Literal(value) {
-        return {
-            type: "Literal",
-            value: value
-        };
-    },
-    /**
-     * @param {Expression} object
-     * @param {Expression} property
-     * @param {Boolean?} computed - true => obj[prop], false => obj.prop
-     */
-    MemberExpression(object, property, computed = false) {
-        return {
-            type: "MemberExpression",
-            object: object,
-            property: property,
-            computed: computed
-        };
-    },
-    /**
-     * @param {Expression} argument
-     * @param {string} operator: "++" or "--"
-     * @param {Boolean} prefix: true => ++argument, false => argument++
-     */
-    UpdateExpression(argument, operator, prefix) {
-        return {
-            type: "UpdateExpression",
-            argument: argument,
-            operator: operator,
-            prefix: prefix
-        };
-    },
-
-    TryStatement(block, handler = null, finalizer = null) {
-        return {
-            type: "TryStatement",
-            block: block,
-            handler: handler,
-            finalizer: finalizer
-        };
-    },
-
-    CatchClause(param, body) {
-        return {
-            type: "CatchClause",
-            param: param,
-            body: body,
-        };
-    },
-
-    SequenceExpression(expressions) {
-        return {
-            type: "SequenceExpression",
-            expressions: expressions,
-        };
-    },
-
-    FunctionExpression(body, params = [], defaults = []) {
-        return {
-            type: "FunctionExpression",
-            id: null,
-            params: params,
-            defaults: defaults,
-            body: body
-        };
-    },
-
-    ReturnStatement(argument = null) {
-        return {
-            type: "ReturnStatement",
-            argument: argument
-        };
-    },
-
-    ConditionalExpression(test, consequent, alternate) {
-        return {
-            type: "ConditionalExpression",
-            test: test,
-            alternate: alternate,
-            consequent: consequent
-        };
-    },
-
-    ThisExpression() {
-        return {
-            type: "ThisExpression"
-        };
-    },
-
-    /**
-     * @param {Array} declarations
-     * @param {string} kind: "var", "let", "const"
-     */
-    VariableDeclaration(declarations, kind) {
-        return {
-            type: "VariableDeclaration",
-            declarations: declarations,
-            kind: kind
-        };
-    }
-};
-
-},{}],"/Users/kevin/live-proxy/src/custom-window.js":[function(require,module,exports){
-// TODO: make pre-defined items unconfigurable but allow globals to be created
-// TODO: add more stuff this this list
-const win = {
-    // global methods
-    parseInt: parseInt,
-    parseFloat: parseFloat,
-    isNaN: isNaN,
-    isFinite: isFinite,
-    setTimeout: setTimeout,     // wrap this so we can cleanup timeouts
-    clearTimeout: clearTimeout,
-    setInterval: setInterval,   // wrap this so we can cleanup interval
-    clearInterval: clearInterval,
-
-    // global objects
-    Object: Object,
-    Array: Array,
-    // Function: Function,      // disallow access because it's a form of eval
-    Boolean: Boolean,
-    Number: Number,
-    String: String,
-    RegExp: RegExp,
-    Date: Date,
-    JSON: JSON,
-    Math: Math,
-    console: console,
-
-    // special values
-    "undefined": undefined,
-    "Infinity": Infinity,
-    "NaN": NaN,
-};
-
-const globals = "/*global " + Object.keys(win).join(" ") + "*/\n";
-
-module.exports = {
-    window: win,
-    globals: globals,
-};
-
-},{}],"/Users/kevin/live-proxy/src/index.js":[function(require,module,exports){
-const md5 = require('blueimp-md5');
-
-const transform = require('./transform');
-const customWindow = require('./custom-window');
-
-
-const canvas = document.getElementById("canvas");
-
-const p = new Processing(canvas, (processing) => {
-    processing.width = canvas.width;
-    processing.height = window.innerHeight;
-
-    processing.draw = function () {};
-});
-
-
-// Persists objects between code changes and re-runs of the code.
-const persistentContext = {};
-
-// The key is the object's identifier.  The object is stringified right (and
-// hashed) after the main body of the user code is run.  If the hashes match
-// then that means that the main body didn't do anything different when creating
-// that object from the last time it was run so it's safe to keep the object
-// that's inside env.  If not, we replace the object in env with the newly
-// initialized object for that identifier.
-// TODO: figure out how to save space if multiple identifiers point to the same object
-const objectHashes = {};
-
-
-
-const eventHandlers = [
-    "draw",
-    "mouseClicked",
-    "mousePressed",
-    "mouseReleased",
-    "mouseMoved",
-    "mouseDragged",
-    "mouseOver",
-    "mouseOut",
-    "keyPressed",
-    "keyReleased",
-    "keyTyped"
-];
-
-const pGlobals = "/*global " +
-    Object.keys(p)
-        .filter(key => !(key[0] === '_' && key[1] === '_'))
-        .map(key => eventHandlers.includes(key) ? `${key}:true` : key)
-        .join(" ") +
-    "*/\n";
-
-
-const injectFunctions = function(newContext, funcList) {
-    Object.keys(persistentContext).forEach(name => {
-        const value = persistentContext[name];
-
-        if (typeof value === 'function') {
-            Object.keys(value.prototype).forEach(key => {
-                delete value.prototype[key];
-            });
-
-            Object.defineProperty(newContext, name, {
-                enumerable: true,
-                get() {
-                    return funcList[name] ? value : undefined;
-                },
-                set(newValue) {
-                    if (newValue.toString() !== value.toString()) {
-                        // TODO: re-run the whole thing
-                        // if there are no objects created by calling the
-                        // constructor then we don't have to rerun anything
-                        persistentContext[name] = newValue;
-                    }
-                    funcList[name] = true;
-                }
-            });
-        }
-    });
-};
-
-
-const updateEnvironments = function(persistentContext, newContext, funcList) {
-    Object.keys(newContext).forEach(name => {
-        const value = newContext[name];
-
-        if (typeof value === 'object') {
-            const hash = md5(JSON.stringify(value));
-
-            // Even though we don't do modify newContext directly, the objects
-            // it stores can be updated via callbacks and event handlers that
-            // are running in between updates to the code.  The objects in
-            // persistentContext will contain any changes to those objects.  As
-            // long as the hashes match it's safe to replace the object in the
-            // new context with the one that's been accumulating changes from
-            // the persisten context.
-            if (objectHashes[name] === hash) {
-                newContext[name] = persistentContext[name];
-            } else {
-                persistentContext[name] = newContext[name];
-                objectHashes[name] = hash;
-            }
-        } else if (typeof value === 'function') {
-            if (persistentContext.hasOwnProperty(name)) {
-                // if the function is in the persistent context but we didn't
-                // define the last time the code changed delete it
-                if (!funcList[name]) {
-                    delete persistentContext[name];
-                }
-            } else {
-                // if the function isn't in the persitent context add it
-                persistentContext[name] = value;
-            }
-        }
-    });
-};
-
-
-// TODO: provide a hook to reset the seed for manual restarts of the program
-var seed = Math.floor(Math.random() * 4294967296);
-
-
-const handleUpdate = function() {
-    var code = editor.getValue();
-
-    const messages = eslint.verify(pGlobals + customWindow.globals + code, {
-        rules: {
-            "semi": 2,
-            "no-undef": 2
-        }
-    });
-
-    if (messages.length > 0) {
-        displayLint(messages);
-        canvas.style.opacity = 0.5;
-    } else {
-        displayLint(messages);
-        try {
-            const transformedCode = transform(code, p, customWindow.window);
-            window.transformedCode = transformedCode;
-
-            const func = new Function('__env__', 'customWindow', 'p', transformedCode);
-            const newContext = {};
-            const funcList = {};    // functions being defined during this run
-
-            injectFunctions(newContext, funcList);
-
-            // TODO: provide a hook to reset state here
-            p.randomSeed(seed);
-
-            func(newContext, customWindow.window, p);
-
-            // TODO: provide a hook to capture state here
-
-            updateEnvironments(persistentContext, newContext, funcList);
-
-            canvas.style.opacity = 1.0;
-        } catch(e) {
-            canvas.style.opacity = 0.5;
-        }
-    }
-};
-
-
-const displayLint = function(messages) {
-    const messageContainer = document.querySelector('#messages');
-
-    messageContainer.innerHTML = messages.map(message => {
-        return `${message.message} on line ${message.line - 2} column ${message.column}<BR>`;
-    }).join('');
-};
-
-
-fetch('example_2.js')
-    .then(res => res.text())
-    .then(code => {
-        editor.setValue(code);
-        editor.on("input", handleUpdate);
-    });
-
-},{"./custom-window":"/Users/kevin/live-proxy/src/custom-window.js","./transform":"/Users/kevin/live-proxy/src/transform.js","blueimp-md5":"/Users/kevin/live-proxy/node_modules/blueimp-md5/js/md5.js"}],"/Users/kevin/live-proxy/src/transform.js":[function(require,module,exports){
-const esprima = require('esprima');
-const escodegen = require('escodegen');
-const estraverse = require('estraverse');
-
-const b = require('./builder');
-
-
-var isReference = function(node, parent) {
-    // we're a property key so we aren't referenced
-    if (parent.type === "Property" && parent.key === node) {
-        return false;
-    }
-
-    // we're a variable declarator id so we aren't referenced
-    if (parent.type === "VariableDeclarator" && parent.id === node) {
-        return false;
-    }
-
-    var isMemberExpression = parent.type === "MemberExpression";
-
-    // we're in a member expression and we're the computed property so we're referenced
-    var isComputedProperty = isMemberExpression && parent.property === node && parent.computed;
-
-    // we're in a member expression and we're the object so we're referenced
-    var isObject = isMemberExpression && parent.object === node;
-
-    // we are referenced
-    return !isMemberExpression || isComputedProperty || isObject;
-};
-
-// TODO: allow an array of objects to pull global references from
-const transform = function(code, libraryObject, customWindow) {
-    const ast = esprima.parse(code, { range: true });
-
-    let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
-        "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver",
-        "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel",
-        "keyPressed", "keyReleased", "keyTyped"];
-
-    let scopes = [{}];
-
-    const envName = '__env__';
-
-    estraverse.replace(ast, {
-        enter(node, parent) {
-            // Create a new scope whenever we encounter a function declaration/expression
-            // and add all of its paramters to this new scope.
-            if (/^Function/.test(node.type)) {
-                let scope = {};
-                node.params.forEach(param => {
-                    scope[param.name] = true;
-                });
-                scopes.push(scope);
-            }
-            // Add any variables declared to the current scope.  This handles
-            // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
-            // because we are handling all of the declarators directly (as opposed
-            // to iterating over node.declarators when node.type === "VariableDeclaration").
-            if (node.type === "VariableDeclarator") {
-                let scope = scopes[scopes.length - 1];
-                scope[node.id.name] = true;
-            }
-        },
-        leave(node, parent) {
-            if (node.type === "Identifier") {
-                if (isReference(node, parent)) {
-                    let scopeIndex = -1;
-                    for (let i = scopes.length - 1; i > -1; i--) {
-                        if (scopes[i][node.name]) {
-                            scopeIndex = i;
-                            break;
-                        }
-                    }
-
-                    // Don't rewrite function parameters.
-                    let isParam = /^Function/.test(parent.type) && parent.params.includes(node);
-                    if (isParam) {
-                        return;
-                    }
-
-                    // Don't catch clause parameters.
-                    if (parent.type === "CatchClause") {
-                        return;
-                    }
-
-                    // These values show up a Identifiers in the AST.  We don't
-                    // want to prefix them so return.
-                    // TODO: only allow this inside of functions
-                    // we can disallow through a lint rule
-                    // currently users can use it access __env__, p, and customLibrary directly
-                    if (["arguments"].includes(node.name)) {
-                        return;
-                    }
-
-                    if (node.name === "window") {
-                        return b.Identifier('customWindow');
-                    }
-
-                    // Prefix identifiers that exist in the library object and
-                    // have not been defined in any scope.
-                    // Since we're looking in libraryObject first, any functions
-                    // in it have precedence over customWindow.
-                    if (node.name in libraryObject && scopeIndex === -1) {
-                        return b.MemberExpression(
-                            b.Identifier('p'), b.Identifier(node.name));
-                    }
-
-                    // TODO: figure out how to track values added to window
-                    if (node.name in customWindow && scopeIndex === -1) {
-                        return b.MemberExpression(
-                            b.Identifier('customWindow'), b.Identifier(node.name));
-                    }
-
-                    // Prefix identifiers that have been declared by the user
-                    // in the global scope.
-                    if (scopeIndex === 0) {
-                        return b.MemberExpression(
-                            b.Identifier(envName), b.Identifier(node.name));
-                    }
-
-                    // TODO: throw an error that the variable hasn't been declared
-                }
-            } else if (node.type === "VariableDeclaration") {
-                if (node.declarations.length === 1) {
-                    // Single VariableDeclarators
-
-                    let decl = node.declarations[0];
-
-                    // If the current variable declaration has an "init" value of null
-                    //  (IE. no init value given to parser), and the current node type
-                    //  doesn't match "ForInStatement" (a for-in loop), exit the
-                    //  function.
-                    if (decl.init === null && parent.type !== "ForInStatement") {
-                        return;
-                    }
-
-                    // Rewrite all function declarations, e.g.
-                    // var foo = function () {} => __env__.foo = function () {}
-                    // that appear in the global scope. Draw loop methods aren't
-                    // special, they should be treated in the exact same way.
-                    if (scopes.length === 1) {
-                        if (["Program", "BlockStatement", "SwitchCase"].includes(parent.type)) {
-                            return b.ExpressionStatement(
-                                b.AssignmentExpression(
-                                    b.MemberExpression(
-                                        b.Identifier(envName),
-                                        b.Identifier(decl.id.name)),
-                                    "=",
-                                    decl.init
-                                )
-                            );
-                        } else {
-                            if (["ForStatement"].includes(parent.type)) {
-                                // Handle variables declared inside a 'for' statement
-                                // occurring in the global scope.
-                                //
-                                // e.g. for (var i = 0; i < 10; i++) { ... } =>
-                                //      for (__env__.i = 0; __env__.i < 10; __env__.i++)
-                                return b.AssignmentExpression(
-                                    b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
-                                    "=",
-                                    decl.init
-                                );
-                            } else if (["ForInStatement"].includes(parent.type)) {
-                                // Handle variables declared inside a 'for in' statement,
-                                //  occuring in the global scope.
-                                // Example:
-                                //  for (var i in obj) { ... }
-                                //  for (__env__.i in __env__.obj) { ... }
-                                return b.MemberExpression(b.Identifier(envName), b.Identifier(decl.id.name));
-                            }
-                        }
-                    }
-                } else {
-                    // Multiple VariableDeclarators
-
-                    if (scopes.length === 1) {
-
-                        if (["Program", "BlockStatement"].includes(parent.type)) {
-                            // Before: var x = 5, y = 10, z;
-                            // After: __env__.x = 5; __env__.y = 10;
-
-                            return node.declarations
-                                .filter(decl => decl.init !== null)
-                                .map(decl => b.ExpressionStatement(
-                                    b.AssignmentExpression(
-                                        b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
-                                        "=",
-                                        decl.init
-                                    )
-                                ));
-                        } else {
-                            // Before: for (var i = 0, j = 0; i * j < 100; i++, j++) { ... }
-                            // After: for (__env__.i = 0, __env__.j = 0; __env__.i * __env__.j < 100; ...) { ... }
-
-                            return {
-                                type: "SequenceExpression",
-                                expressions: node.declarations.map(decl => {
-                                    return b.AssignmentExpression(
-                                        b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
-                                        "=",
-                                        decl.init
-                                    );
-                                })
-                            };
-                        }
-
-                    } else if (node.declarations.some(decl => drawLoopMethods.includes(decl.id.name))) {
-                        // this is super edge case, it handles things that look like
-                        // var draw = function() {
-                        //     var x = 5, mouseClicked = function () { ... }, y = 10;
-                        // };
-                        // It should convert them to something like this:
-                        // __env__.draw = function() {
-                        //     var x = 5;
-                        //     var mouseClicked = function () { ... };
-                        //     var y = 10;
-                        // };
-
-                        return node.declarations
-                            .filter(decl => decl.init !== null)
-                            .map(decl => {
-                                return b.VariableDeclaration([decl], node.kind);
-                            });
-                    }
-                }
-
-            } else if (/^Function/.test(node.type)) {
-                // Remove all local variables from the scopes stack as we exit
-                // the function expression/declaration.
-                scopes.pop();
-            }
-        }
-    });
-
-    // replaces function expressions with a sequence expression that assigns
-    // the function expression to _ and then rewrite _.toString to return the
-    // original function
-    estraverse.replace(ast, {
-        leave(node, parent) {
-            if (/^Function/.test(node.type)) {
-                const body = node.body;
-
-                // TODO: don't swallow exception, call a global method to report the error
-                node.body = b.BlockStatement([
-                    b.TryStatement(body,
-                        b.CatchClause(b.Identifier('e'), b.BlockStatement([]))
-                    )
-                ]);
-
-                return b.SequenceExpression([
-                    b.AssignmentExpression(
-                        b.Identifier('_'),
-                        '=',
-                        node
-                    ),
-                    b.AssignmentExpression(
-                        b.MemberExpression(b.Identifier('_'), b.Identifier('toString')),
-                        '=',
-                        b.FunctionExpression(b.BlockStatement([
-                            b.ReturnStatement(
-                                b.ExpressionStatement(
-                                    b.Literal(code.substring(node.range[0], node.range[1]))
-                                )
-                            )
-                        ]))
-                    ),
-                    b.Identifier('_')
-                ]);
-            }
-        }
-    });
-
-    estraverse.replace(ast, {
-        leave(node, parent) {
-            if (node.type === 'ThisExpression') {
-                return b.ConditionalExpression(
-                    b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')),
-                    b.Identifier('customWindow'),
-                    b.ThisExpression()
-                );
-            }
-        }
-    });
-
-    return escodegen.generate(ast);
-};
-
-module.exports = transform;
-
-},{"./builder":"/Users/kevin/live-proxy/src/builder.js","escodegen":"/Users/kevin/live-proxy/node_modules/escodegen/escodegen.js","esprima":"/Users/kevin/live-proxy/node_modules/esprima/esprima.js","estraverse":"/Users/kevin/live-proxy/node_modules/estraverse/estraverse.js"}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/path-browserify/index.js":[function(require,module,exports){
+},{"./ast":20,"./code":21,"./keyword":22}],24:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -14797,38 +13820,72 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js"}],"/usr/local/lib/node_modules/watchify/node_modules/browserify/node_modules/process/browser.js":[function(require,module,exports){
+},{"_process":25}],25:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
 var queue = [];
 var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
 
 function drainQueue() {
     if (draining) {
         return;
     }
+    var timeout = setTimeout(cleanUpNextTick);
     draining = true;
-    var currentQueue;
+
     var len = queue.length;
     while(len) {
         currentQueue = queue;
         queue = [];
-        var i = -1;
-        while (++i < len) {
-            currentQueue[i]();
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
+        queueIndex = -1;
         len = queue.length;
     }
+    currentQueue = null;
     draining = false;
+    clearTimeout(timeout);
 }
+
 process.nextTick = function (fun) {
-    queue.push(fun);
-    if (!draining) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
         setTimeout(drainQueue, 0);
     }
 };
 
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
 process.title = 'browser';
 process.browser = true;
 process.env = {};
@@ -14850,11 +13907,896 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
 
-},{}]},{},["/Users/kevin/live-proxy/src/index.js"]);
+},{}],26:[function(require,module,exports){
+module.exports = {
+    /**
+     * @param {Expression} left
+     * @param {string} operator: "=", "+=", "-=", "*=", "/=", etc.
+     * @param {Expression} right
+     */
+    AssignmentExpression(left, operator, right) {
+        return {
+            type: "AssignmentExpression",
+            left: left,
+            operator: operator,
+            right: right
+        };
+    },
+    /**
+     * @param {Expression} left
+     * @param {string} operator: "+", "-", "*", "/", "<", ">", "<=", ">=", etc.
+     * @param {Expression} right
+     */
+    BinaryExpression(left, operator, right) {
+        return {
+            type: "BinaryExpression",
+            left: left,
+            operator: operator,
+            right: right
+        };
+    },
+    /**
+     * @param {Array} body: an array of Expressions
+     */
+    BlockStatement(body) {
+        return {
+            type: "BlockStatement",
+            body: body
+        };
+    },
+    /**
+     * @param {Expression} callee
+     * @param {Array} args
+     */
+    CallExpression(callee, args) {
+        return {
+            type: "CallExpression",
+            callee: callee,
+            arguments: args
+        };
+    },
+    /**
+     * @param {Expression} expression
+     */
+    ExpressionStatement(expression) {
+        return {
+            type: "ExpressionStatement",
+            expression: expression
+        };
+    },
+    /**
+     * @param {string} name
+     */
+    Identifier(name) {
+        return {
+            type: "Identifier",
+            name: name
+        };
+    },
+    /**
+     * @param {Expression} test
+     * @param {Statement} consequent: usually a BlockStatement
+     * @param {Statement?} alternate: usually a BlockStatement when not omitted
+     */
+    IfStatement(test, consequent, alternate = null) {
+        return {
+            type: "IfStatement",
+            test: test,
+            consequent: consequent,
+            alternate: alternate
+        };
+    },
+    /**
+     * @param {Number|String|null|RegExp} value
+     */
+    Literal(value) {
+        return {
+            type: "Literal",
+            value: value
+        };
+    },
+    /**
+     * @param {Expression} object
+     * @param {Expression} property
+     * @param {Boolean?} computed - true => obj[prop], false => obj.prop
+     */
+    MemberExpression(object, property, computed = false) {
+        return {
+            type: "MemberExpression",
+            object: object,
+            property: property,
+            computed: computed
+        };
+    },
+    /**
+     * @param {Expression} argument
+     * @param {string} operator: "++" or "--"
+     * @param {Boolean} prefix: true => ++argument, false => argument++
+     */
+    UpdateExpression(argument, operator, prefix) {
+        return {
+            type: "UpdateExpression",
+            argument: argument,
+            operator: operator,
+            prefix: prefix
+        };
+    },
+
+    TryStatement(block, handler = null, finalizer = null) {
+        return {
+            type: "TryStatement",
+            block: block,
+            handler: handler,
+            finalizer: finalizer
+        };
+    },
+
+    CatchClause(param, body) {
+        return {
+            type: "CatchClause",
+            param: param,
+            body: body,
+        };
+    },
+
+    SequenceExpression(expressions) {
+        return {
+            type: "SequenceExpression",
+            expressions: expressions,
+        };
+    },
+
+    FunctionExpression(body, params = [], defaults = []) {
+        return {
+            type: "FunctionExpression",
+            id: null,
+            params: params,
+            defaults: defaults,
+            body: body
+        };
+    },
+
+    ReturnStatement(argument = null) {
+        return {
+            type: "ReturnStatement",
+            argument: argument
+        };
+    },
+
+    ConditionalExpression(test, consequent, alternate) {
+        return {
+            type: "ConditionalExpression",
+            test: test,
+            alternate: alternate,
+            consequent: consequent
+        };
+    },
+
+    ThisExpression() {
+        return {
+            type: "ThisExpression"
+        };
+    },
+
+    ArrayExpression(elements) {
+        return {
+            type: "ArrayExpression",
+            elements: elements
+        };
+    },
+
+    /**
+     * @param {Array} declarations
+     * @param {string} kind: "var", "let", "const"
+     */
+    VariableDeclaration(declarations, kind) {
+        return {
+            type: "VariableDeclaration",
+            declarations: declarations,
+            kind: kind
+        };
+    }
+};
+
+},{}],27:[function(require,module,exports){
+// TODO: make pre-defined items unconfigurable but allow globals to be created
+// TODO: add more stuff this this list
+const win = {
+    // global methods
+    parseInt: parseInt,
+    parseFloat: parseFloat,
+    isNaN: isNaN,
+    isFinite: isFinite,
+    setTimeout: setTimeout,     // wrap this so we can cleanup timeouts
+    clearTimeout: clearTimeout,
+    setInterval: setInterval,   // wrap this so we can cleanup interval
+    clearInterval: clearInterval,
+
+    // global objects
+    Object: Object,
+    Array: Array,
+    // Function: Function,      // disallow access because it's a form of eval
+    Boolean: Boolean,
+    Number: Number,
+    String: String,
+    RegExp: RegExp,
+    Date: Date,
+    JSON: JSON,
+    Math: Math,
+    console: console,
+
+    // special values
+    "undefined": undefined,
+    "Infinity": Infinity,
+    "NaN": NaN,
+};
+
+const globals = "/*global " + Object.keys(win).join(" ") + "*/\n";
+
+module.exports = {
+    window: win,
+    globals: globals,
+};
+
+},{}],28:[function(require,module,exports){
+const transform = require('./transform');
+const customWindow = require('./custom-window');
+
+const canvas = document.getElementById("canvas");
+
+const p = new Processing(canvas, (processing) => {
+    processing.width = canvas.width;
+    processing.height = canvas.height;
+
+    processing.draw = function () {};
+});
+
+window.p = p;
+
+const stateModifiers = [
+    'colorMode',
+    'ellipseMode',
+    'fill',
+    'frameRate',
+    'imageMode',
+    'rectMode',
+    'stroke',
+    'strokeCap',
+    'strokeWeight'
+];
+
+const clone = function(obj) {
+    return JSON.parse(JSON.stringify(obj));
+};
+
+const compare = function(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+};
+
+const state = {
+    colorMode: [p.RGB],
+    ellipseMode: [p.CENTER],
+    fill: [255, 255, 255],
+    frameRate: [60],
+    imageMode: [p.CORNER],
+    rectMode: [p.CORNER],
+    stroke: [0, 0, 0],
+    strokeCap: [p.ROUND],
+    strokeWeight: [1],
+};
+
+// the snapshot is always the value of the state after running main
+const snapshot = clone(state);
+const defaultState = clone(state);
+const beforeState = {};
+const afterState = {};
+
+stateModifiers.forEach(name => {
+    let func = p[name];
+
+    Object.defineProperty(p, name,  {
+        get() {
+            return (...args) => {
+                // TODO: instead of toggling record... we can just grab the state at a particular point in time
+                // we want to be able to take snapshots of state a different times
+                // compare those snapshots and update the current state appropriately
+                state[name] = args;
+                func.apply(p, args);
+            };
+        },
+        set(value) {
+            func = value;
+        }
+    });
+});
+
+
+// Persists objects between code changes and re-runs of the code.
+const persistentContext = {};
+
+let context = {};
+
+// The key is the object's identifier.  The object is stringified right (and
+// hashed) after the main body of the user code is run.  If the hashes match
+// then that means that the main body didn't do anything different when creating
+// that object from the last time it was run so it's safe to keep the object
+// that's inside env.  If not, we replace the object in env with the newly
+// initialized object for that identifier.
+// TODO: figure out how to save space if multiple identifiers point to the same object
+const objectHashes = {};
+
+
+
+const eventHandlers = [
+    "draw",
+    "mouseClicked",
+    "mousePressed",
+    "mouseReleased",
+    "mouseMoved",
+    "mouseDragged",
+    "mouseOver",
+    "mouseOut",
+    "keyPressed",
+    "keyReleased",
+    "keyTyped"
+];
+
+const props = [];
+// processing object's have multiple levels in their hierarchy and we want to
+// get all of the properties so we use for-in here
+for (const prop in p) {
+    props.push(prop);
+}
+
+const pGlobals = "/*global " +
+    props
+        .filter(key => !(key[0] === '_' && key[1] === '_'))
+        .map(key => eventHandlers.includes(key) ? `${key}:true` : key)
+        .join(" ") +
+    "*/\n";
+
+
+const injectProxies = function(context, globals) {
+    Object.keys(globals).forEach(name => {
+        let value = undefined;
+
+        Object.defineProperty(context, name, {
+            enumerable: true,
+            get() {
+                return value;
+            },
+            set(newValue) {
+                if (typeof newValue === 'function') {
+                    if (!proxies.hasOwnProperty(newValue.name)) {
+                        proxies[newValue.name] = createProxy(newValue);
+                    } else {
+                        //     Object.keys(proxy.prototype).forEach(name => {
+                        //         delete proxy.prototype[name];
+                        //     });
+                    }
+                    const proxy = proxies[newValue.name];
+                    proxy.update(newValue);
+                    value = proxy;
+                } else {
+                    value = newValue;
+                }
+            }
+        });
+    });
+};
+
+
+const updateEnvironments = function(persistentContext, newContext, funcList) {
+    Object.keys(newContext).forEach(name => {
+        const value = newContext[name];
+
+        if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
+            const hash = value === customWindow.window
+                ? 'customWindow'
+                : objectHash(value, { respectType: false, ignoreUnknown: true });
+
+            // Even though we don't do modify newContext directly, the objects
+            // it stores can be updated via callbacks and event handlers that
+            // are running in between updates to the code.  The objects in
+            // persistentContext will contain any changes to those objects.  As
+            // long as the hashes match it's safe to replace the object in the
+            // new context with the one that's been accumulating changes from
+            // the persisten context.
+            if (objectHashes[name] === hash) {
+                newContext[name] = persistentContext[name];
+            } else {
+                persistentContext[name] = newContext[name];
+                objectHashes[name] = hash;
+            }
+        } else if (typeof value === 'function') {
+            if (persistentContext.hasOwnProperty(name)) {
+                // if the function is in the persistent context but we didn't
+                // define the last time the code changed delete it
+                if (!funcList[name]) {
+                    delete persistentContext[name];
+                }
+            } else {
+                // if the function isn't in the persitent context add it
+                persistentContext[name] = value;
+            }
+        }
+    });
+};
+
+
+// TODO: provide a hook to reset the seed for manual restarts of the program
+var seed = Math.floor(Math.random() * 4294967296);
+var DUMMY = function() {};
+
+const beforeMain = function() {
+    p.randomSeed(seed);
+
+    // TODO: figure out a good way to track this state along with the rest
+    p.angleMode = 'degrees';
+
+    eventHandlers.forEach(eventName => {
+        p[eventName] = DUMMY;
+    });
+
+    // capture state before main so that we can restore if after running main
+    Object.assign(beforeState, clone(state));
+
+    // reset state to handle deleting of state changing commands
+    stateModifiers.forEach(name => {
+        p[name](...defaultState[name]);
+    });
+
+    // p.textAlign(37, 0);
+    // p.textAscent(9);
+    // p.textDescent(12);
+    // p.textFont("Arial", 12);
+    // p.textLeading(14);
+    // p.textSize(1);
+};
+
+const afterMain = function() {
+    Object.assign(afterState, clone(state));
+
+    // maintain invariant: snapshot is always the state after running main
+    stateModifiers.forEach(name => {
+        if (compare(snapshot[name], afterState[name])) {
+            // update the state by calling the state modifying function
+            p[name](...beforeState[name]);
+        } else {
+            // update the snapshot
+            snapshot[name] = afterState[name];
+        }
+    });
+};
+
+const handleUpdate = function() {
+    var code = editor.getValue();
+
+    const messages = eslint.verify(pGlobals + customWindow.globals + code, {
+        rules: {
+            "semi": 2,
+            "no-undef": 2
+        }
+    });
+
+    if (messages.length > 0) {
+        displayLint(messages);
+        canvas.style.opacity = 0.5;
+    } else {
+        displayLint(messages);
+        try {
+            const { transformedCode, globals } = transform(code, p, customWindow.window);
+            window.transformedCode = transformedCode;
+
+            // grab the current values before re-running the function
+            Object.keys(context).forEach(name => {
+                const value = context[name];
+                if (typeof value === 'number' || typeof value === 'string' || typeof value === 'object') {
+                    persistentContext[name] = value;
+                }
+            });
+
+            const func = new Function('__env__', 'customWindow', '__p__', 'displayException', transformedCode);
+            // TODO: expand funcList to include all data types
+            const funcList = {};    // functions being defined during this run
+            context = {};
+            window.context = context;
+
+            injectProxies(context, globals);
+
+            beforeMain();
+
+            func(context, customWindow.window, p, displayException);
+
+            afterMain();
+
+            updateEnvironments(persistentContext, context, funcList);
+
+            canvas.style.opacity = 1.0;
+        } catch(e) {
+            displayException(e);
+            canvas.style.opacity = 0.5;
+        }
+    }
+};
+
+
+const displayLint = function(messages) {
+    const messageContainer = document.querySelector('#messages');
+
+    messageContainer.innerHTML = messages.map(message => {
+        return `${message.message} on line ${message.line - 2} column ${message.column}<BR>`;
+    }).join('');
+};
+
+
+const displayException = function(e) {
+    const messageContainer = document.querySelector('#messages');
+
+    messageContainer.innerHTML = `${e.name}: ${e.message}`;
+};
+
+const proxies = {};
+
+const createProxy = function(constructor) {
+    let currentConstructor = constructor;
+
+    const ProxyClass = new Function('getCurrentConstructor',
+        `return function ${constructor.name}() { return getCurrentConstructor().apply(this, arguments); }`
+    )(() => currentConstructor);
+
+    Object.keys(constructor.prototype).forEach(name => {
+        ProxyClass.prototype[name] = constructor.prototype[name];
+    });
+
+    ProxyClass.update = function(newConstructor) {
+        currentConstructor = newConstructor;
+
+        // copy over new methods because they reference variables from
+        // the new context
+        Object.keys(newConstructor.prototype).forEach(name => {
+            ProxyClass.prototype[name] = newConstructor.prototype[name];
+        });
+    };
+
+    return ProxyClass;
+};
+
+fetch('example_2.js')
+    .then(res => res.text())
+    .then(code => {
+        editor.setValue(code);
+        editor.on("input", handleUpdate);
+        const selection = editor.getSelection();
+        selection.moveCursorFileStart();
+    });
+
+},{"./custom-window":27,"./transform":29}],29:[function(require,module,exports){
+const esprima = require('esprima');
+const escodegen = require('escodegen');
+const estraverse = require('estraverse');
+
+const b = require('./builder');
+
+
+var isReference = function(node, parent) {
+    // we're a property key so we aren't referenced
+    if (parent.type === "Property" && parent.key === node) {
+        return false;
+    }
+
+    // we're a variable declarator id so we aren't referenced
+    if (parent.type === "VariableDeclarator" && parent.id === node) {
+        return false;
+    }
+
+    var isMemberExpression = parent.type === "MemberExpression";
+
+    // we're in a member expression and we're the computed property so we're referenced
+    var isComputedProperty = isMemberExpression && parent.property === node && parent.computed;
+
+    // we're in a member expression and we're the object so we're referenced
+    var isObject = isMemberExpression && parent.object === node;
+
+    // we are referenced
+    return !isMemberExpression || isComputedProperty || isObject;
+};
+
+var getName = function(node) {
+    if (node.type === 'Identifier') {
+        return node.name;
+    } else if (node.type === 'MemberExpression') {
+        return `${getName(node.object)}.${getName(node.property)}`;
+    } else {
+        throw new Error(`getName doesn't handle ${node.type} yet`);
+    }
+};
+
+// TODO: allow an array of objects to pull global references from
+const transform = function(code, libraryObject, customWindow) {
+    const ast = esprima.parse(code, { range: true });
+
+    let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
+        "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver",
+        "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel",
+        "keyPressed", "keyReleased", "keyTyped"];
+
+    const globals = {};
+
+    let scopes = [globals];
+
+    const envName = '__env__';
+
+    estraverse.replace(ast, {
+        enter(node, parent) {
+            // Create a new scope whenever we encounter a function declaration/expression
+            // and add all of its paramters to this new scope.
+            if (/^Function/.test(node.type)) {
+                let scope = {};
+                node.params.forEach(param => {
+                    scope[param.name] = true;
+                });
+                scopes.push(scope);
+            }
+            // Add any variables declared to the current scope.  This handles
+            // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
+            // because we are handling all of the declarators directly (as opposed
+            // to iterating over node.declarators when node.type === "VariableDeclaration").
+            if (node.type === "VariableDeclarator") {
+                let scope = scopes[scopes.length - 1];
+                scope[node.id.name] = true;
+            }
+        },
+        leave(node, parent) {
+            if (node.type === "Identifier") {
+                if (isReference(node, parent)) {
+                    let scopeIndex = -1;
+                    for (let i = scopes.length - 1; i > -1; i--) {
+                        if (scopes[i][node.name]) {
+                            scopeIndex = i;
+                            break;
+                        }
+                    }
+
+                    // Don't rewrite function parameters.
+                    let isParam = /^Function/.test(parent.type) && parent.params.includes(node);
+                    if (isParam) {
+                        return;
+                    }
+
+                    // Don't rewrite catch clause parameters.
+                    if (parent.type === "CatchClause") {
+                        return;
+                    }
+
+                    // These values show up a Identifiers in the AST.  We don't
+                    // want to prefix them so return.
+                    // TODO: only allow this inside of functions
+                    // we can disallow through a lint rule
+                    // currently users can use it access __env__, p, and customLibrary directly
+                    if (["arguments"].includes(node.name)) {
+                        return;
+                    }
+
+                    if (node.name === "window") {
+                        return b.Identifier('customWindow');
+                    }
+
+                    // Prefix identifiers that exist in the library object and
+                    // have not been defined in any scope.
+                    // Since we're looking in libraryObject first, any functions
+                    // in it have precedence over customWindow.
+                    if (node.name in libraryObject && scopeIndex === -1) {
+                        return b.MemberExpression(
+                            b.Identifier('__p__'), b.Identifier(node.name));
+                    }
+
+                    // TODO: figure out how to track values added to window
+                    if (node.name in customWindow && scopeIndex === -1) {
+                        return b.MemberExpression(
+                            b.Identifier('customWindow'), b.Identifier(node.name));
+                    }
+
+                    // Prefix identifiers that have been declared by the user
+                    // in the global scope.
+                    if (scopeIndex === 0) {
+                        return b.MemberExpression(
+                            b.Identifier(envName), b.Identifier(node.name));
+                    }
+
+                    // TODO: throw an error that the variable hasn't been declared
+                }
+            } else if (node.type === "VariableDeclaration") {
+                if (node.declarations.length === 1) {
+                    // Single VariableDeclarators
+
+                    let decl = node.declarations[0];
+
+                    // If the current variable declaration has an "init" value of null
+                    //  (IE. no init value given to parser), and the current node type
+                    //  doesn't match "ForInStatement" (a for-in loop), exit the
+                    //  function.
+                    if (decl.init === null && parent.type !== "ForInStatement") {
+                        return;
+                    }
+
+                    // Rewrite all function declarations, e.g.
+                    // var foo = function () {} => __env__.foo = function () {}
+                    // that appear in the global scope. Draw loop methods aren't
+                    // special, they should be treated in the exact same way.
+                    if (scopes.length === 1) {
+                        if (["Program", "BlockStatement", "SwitchCase"].includes(parent.type)) {
+                            return b.ExpressionStatement(
+                                b.AssignmentExpression(
+                                    b.MemberExpression(
+                                        b.Identifier(envName),
+                                        b.Identifier(decl.id.name)),
+                                    "=",
+                                    decl.init
+                                )
+                            );
+                        } else {
+                            if (["ForStatement"].includes(parent.type)) {
+                                // Handle variables declared inside a 'for' statement
+                                // occurring in the global scope.
+                                //
+                                // e.g. for (var i = 0; i < 10; i++) { ... } =>
+                                //      for (__env__.i = 0; __env__.i < 10; __env__.i++)
+                                return b.AssignmentExpression(
+                                    b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
+                                    "=",
+                                    decl.init
+                                );
+                            } else if (["ForInStatement"].includes(parent.type)) {
+                                // Handle variables declared inside a 'for in' statement,
+                                //  occuring in the global scope.
+                                // Example:
+                                //  for (var i in obj) { ... }
+                                //  for (__env__.i in __env__.obj) { ... }
+                                return b.MemberExpression(b.Identifier(envName), b.Identifier(decl.id.name));
+                            }
+                        }
+                    }
+                } else {
+                    // Multiple VariableDeclarators
+
+                    if (scopes.length === 1) {
+
+                        if (["Program", "BlockStatement"].includes(parent.type)) {
+                            // Before: var x = 5, y = 10, z;
+                            // After: __env__.x = 5; __env__.y = 10;
+
+                            return node.declarations
+                                .filter(decl => decl.init !== null)
+                                .map(decl => b.ExpressionStatement(
+                                    b.AssignmentExpression(
+                                        b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
+                                        "=",
+                                        decl.init
+                                    )
+                                ));
+                        } else {
+                            // Before: for (var i = 0, j = 0; i * j < 100; i++, j++) { ... }
+                            // After: for (__env__.i = 0, __env__.j = 0; __env__.i * __env__.j < 100; ...) { ... }
+
+                            return {
+                                type: "SequenceExpression",
+                                expressions: node.declarations.map(decl => {
+                                    return b.AssignmentExpression(
+                                        b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
+                                        "=",
+                                        decl.init
+                                    );
+                                })
+                            };
+                        }
+
+                    } else if (node.declarations.some(decl => drawLoopMethods.includes(decl.id.name))) {
+                        // this is super edge case, it handles things that look like
+                        // var draw = function() {
+                        //     var x = 5, mouseClicked = function () { ... }, y = 10;
+                        // };
+                        // It should convert them to something like this:
+                        // __env__.draw = function() {
+                        //     var x = 5;
+                        //     var mouseClicked = function () { ... };
+                        //     var y = 10;
+                        // };
+
+                        return node.declarations
+                            .filter(decl => decl.init !== null)
+                            .map(decl => {
+                                return b.VariableDeclaration([decl], node.kind);
+                            });
+                    }
+                }
+
+            } else if (/^Function/.test(node.type)) {
+                // Remove all local variables from the scopes stack as we exit
+                // the function expression/declaration.
+                scopes.pop();
+            }
+        }
+    });
+
+    // replaces function expressions with a sequence expression that assigns
+    // the function expression to _ and then rewrite _.toString to return the
+    // original function
+    estraverse.replace(ast, {
+        leave(node, parent) {
+            if (/^Function/.test(node.type)) {
+                const body = node.body;
+
+                // TODO: don't swallow exception, call a global method to report the error
+                node.body = b.BlockStatement([
+                    b.TryStatement(body,
+                        b.CatchClause(b.Identifier('e'), b.BlockStatement([
+                            b.CallExpression(
+                                b.Identifier('displayException'),
+                                [
+                                    b.Identifier('e')
+                                ]
+                            )
+                        ]))
+                    )
+                ]);
+
+                if (parent && parent.type === 'AssignmentExpression') {
+                    const name = getName(parent.left);
+                    const parts = name.split('.');
+                    if (parts[0] === '__env__') {
+                        node.id = b.Identifier(parts[parts.length - 1]);
+                    }
+                }
+
+                return b.SequenceExpression([
+                    b.AssignmentExpression(
+                        b.Identifier('_'),
+                        '=',
+                        node
+                    ),
+                    b.AssignmentExpression(
+                        b.MemberExpression(b.Identifier('_'), b.Identifier('toString')),
+                        '=',
+                        b.FunctionExpression(b.BlockStatement([
+                            b.ReturnStatement(
+                                b.ExpressionStatement(
+                                    b.Literal(code.substring(node.range[0], node.range[1]))
+                                )
+                            )
+                        ]))
+                    ),
+                    b.Identifier('_')
+                ]);
+            }
+        }
+    });
+
+    estraverse.replace(ast, {
+        leave(node, parent) {
+            if (node.type === 'ThisExpression') {
+                return b.ConditionalExpression(
+                    b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')),
+                    b.Identifier('customWindow'),
+                    b.ThisExpression()
+                );
+            }
+        }
+    });
+
+    return {
+        ast: ast,
+        transformedCode: escodegen.generate(ast),
+        globals: globals
+    };
+};
+
+module.exports = transform;
+
+},{"./builder":26,"escodegen":2,"esprima":17,"estraverse":18}]},{},[28]);

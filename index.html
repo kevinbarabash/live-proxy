@@ -6,6 +6,7 @@
     <style>
         body {
             margin: 0;
+            background-color: lightgray;
         }
 
         #container {
@@ -22,7 +23,8 @@
             position: relative;
             flex-shrink: 0;
             border-left: solid 1px lightgray;
-            width: 512px;
+            width: 400px;
+            height: 400px;
         }
 
         :focus {
@@ -33,19 +35,21 @@
             position: absolute;
             left: 0;
             top: 0;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-<script src="lib/processing.js"></script>
-<script src="lib/eslint.js"></script>
-<script src="lib/ace/ace.js"></script>
+<script src="../lib/processing.js"></script>
+<script src="../lib/eslint.js"></script>
+<script src="../lib/ace/ace.js"></script>
+<script src="../lib/object-hash.js"></script>
 
 <div id="container">
     <div id="editor"></div>
     <div id="canvas-container">
-        <canvas id="canvas" width="512"></canvas>
+        <canvas id="canvas" width="400" height="400"></canvas>
         <div id="messages"></div>
     </div>
 </div>
