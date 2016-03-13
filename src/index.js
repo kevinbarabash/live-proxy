@@ -5,7 +5,7 @@ const canvas = document.getElementById("canvas");
 
 const p = new Processing(canvas, (processing) => {
     processing.width = canvas.width;
-    processing.height = window.innerHeight;
+    processing.height = canvas.height;
 
     processing.draw = function () {};
 });
@@ -326,4 +326,6 @@ fetch('example_2.js')
     .then(code => {
         editor.setValue(code);
         editor.on("input", handleUpdate);
+        const selection = editor.getSelection();
+        selection.moveCursorFileStart();
     });
