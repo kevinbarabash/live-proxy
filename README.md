@@ -15,6 +15,7 @@ used by live-editor.
 - handles prototype style classes
 - handles objects containing cycles
 - handles saving/restoring global state in Processing-js in a generalizable way
+- handles inheritance
 
 ### Sand Boxing
 
@@ -29,12 +30,9 @@ used by live-editor.
 
 ## TODO
 
-- allow locals to shadow global variables
-- handle inheritance
 - handle ES2015 style classes
 - iframe sand boxing
 - proper event handling in iframes
 - wrap document.createElement to prevent creation of other iframes or scripts
   programmatically
 - automatically handle cleanup of timers and intervals
-- give users feedback whenever an exception happens with the location if possible
