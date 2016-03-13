@@ -47,7 +47,9 @@ const transform = function(code, libraryObject, customWindow) {
         "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel",
         "keyPressed", "keyReleased", "keyTyped"];
 
-    let scopes = [{}];
+    const globals = {};
+
+    let scopes = [globals];
 
     const envName = '__env__';
 
@@ -305,17 +307,14 @@ const transform = function(code, libraryObject, customWindow) {
                     b.ThisExpression()
                 );
             }
-
-            if (node.type === 'NewExpression') {
-                return b.CallExpression(
-                    b.Identifier('createObject'),
-                    [ node.callee, b.ArrayExpression(node.arguments) ]
-                );
-            }
         }
     });
 
-    return escodegen.generate(ast);
+    return {
+        ast: ast,
+        transformedCode: escodegen.generate(ast),
+        globals: globals
+    };
 };
 
 module.exports = transform;

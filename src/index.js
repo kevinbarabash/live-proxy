@@ -1,6 +1,5 @@
 const transform = require('./transform');
 const customWindow = require('./custom-window');
-const objectHash = require('object-hash');
 
 const canvas = document.getElementById("canvas");
 
@@ -116,28 +115,30 @@ const pGlobals = "/*global " +
     "*/\n";
 
 
-const injectProxies = function(context, funcList) {
-    Object.keys(proxies).forEach(name => {
-        const proxy = proxies[name];
-
-        // TODO: track which methods were added while running main vs ones that were added after the fact
-        // For now we delete all method before running main so only the ones
-        // are adding during main get added back in
-        Object.keys(proxy.prototype).forEach(name => {
-            delete proxy.prototype[name];
-        });
+const injectProxies = function(context, globals) {
+    Object.keys(globals).forEach(name => {
+        let value = undefined;
 
         Object.defineProperty(context, name, {
             enumerable: true,
             get() {
-                return funcList[name] ? proxy : undefined;
+                return value;
             },
-            set(newConstructor) {
-                if (funcList[name]) {
-                    // TODO: warn that constructors shouldn't be redefined
+            set(newValue) {
+                if (typeof newValue === 'function') {
+                    if (!proxies.hasOwnProperty(newValue.name)) {
+                        proxies[newValue.name] = createProxy(newValue);
+                    } else {
+                        //     Object.keys(proxy.prototype).forEach(name => {
+                        //         delete proxy.prototype[name];
+                        //     });
+                    }
+                    const proxy = proxies[newValue.name];
+                    proxy.update(newValue);
+                    value = proxy;
+                } else {
+                    value = newValue;
                 }
-                proxy.update(newConstructor);
-                funcList[name] = true;
             }
         });
     });
@@ -243,7 +244,7 @@ const handleUpdate = function() {
     } else {
         displayLint(messages);
         try {
-            const transformedCode = transform(code, p, customWindow.window);
+            const { transformedCode, globals } = transform(code, p, customWindow.window);
             window.transformedCode = transformedCode;
 
             // grab the current values before re-running the function
@@ -254,17 +255,17 @@ const handleUpdate = function() {
                 }
             });
 
-            const func = new Function('__env__', 'customWindow', '__p__', 'displayException', 'createObject', transformedCode);
+            const func = new Function('__env__', 'customWindow', '__p__', 'displayException', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
             window.context = context;
 
-            injectProxies(context, funcList);
+            injectProxies(context, globals);
 
             beforeMain();
 
-            func(context, customWindow.window, p, displayException, createObject);
+            func(context, customWindow.window, p, displayException);
 
             afterMain();
 
@@ -299,8 +300,6 @@ const proxies = {};
 const createProxy = function(constructor) {
     let currentConstructor = constructor;
 
-    // ProxyClasses need a name, ensure that we don't create an anonymous function here
-    // The name is used in createObject.
     const ProxyClass = new Function('getCurrentConstructor',
         `return function ${constructor.name}() { return getCurrentConstructor().apply(this, arguments); }`
     )(() => currentConstructor);
@@ -320,22 +319,6 @@ const createProxy = function(constructor) {
     };
 
     return ProxyClass;
-};
-
-const createObject = function(constructor, args) {
-    // only create a proxy for a class when constructing the first instance
-    if (!proxies.hasOwnProperty(constructor.name)) {
-        // TODO: redefine the constructor to be a getter/setting on context object
-        // This will handle an edge case where the users creates an object and
-        // then redefined the class in the first run of the program.
-        proxies[constructor.name] = createProxy(constructor);
-    }
-
-    const proxy = proxies[constructor.name];
-    const obj = Object.create(proxy.prototype);
-    proxy.apply(obj, args);
-
-    return obj;
 };
 
 fetch('example_2.js')
