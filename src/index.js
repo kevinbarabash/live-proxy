@@ -142,6 +142,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
         if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
             const hash = value === customWindow.window
                 ? 'customWindow'
+                // it's okay to add/delete methods on the prototype
                 : objectHash(value, { respectType: false });
 
             // Even though we don't do modify newContext directly, the objects

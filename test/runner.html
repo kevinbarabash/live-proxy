@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Runner</title>
+    <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="mocha"></div>
+
+    <script src="../lib/eslint.js"></script>
+    <script src="../lib/object-hash.js"></script>
+    <script src="../lib/processing.js"></script>
+    <script src="../node_modules/expect.js/index.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+
+    <script>mocha.setup('bdd')</script>
+
+    <script src="live_updating_spec.js"></script>
+    <script src="sandbox_spec.js"></script>
+
+    <script>
+        mocha.checkLeaks();
+        mocha.globals(['jQuery']);
+        mocha.run();
+    </script>
+</body>
+</html>
