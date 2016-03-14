@@ -14171,6 +14171,20 @@ const stateModifiers = [
     'strokeWeight'
 ];
 
+const eventHandlers = [
+    "draw",
+    "mouseClicked",
+    "mousePressed",
+    "mouseReleased",
+    "mouseMoved",
+    "mouseDragged",
+    "mouseOver",
+    "mouseOut",
+    "keyPressed",
+    "keyReleased",
+    "keyTyped"
+];
+
 const clone = function(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
@@ -14216,6 +14230,32 @@ stateModifiers.forEach(name => {
     });
 });
 
+eventHandlers.forEach(name => {
+    let value = undefined;
+    Object.defineProperty(p, name, {
+        get() {
+            return value;
+        },
+        set(newValue) {
+            value = function() {
+                try {
+                    newValue.apply(p, arguments);
+                } catch(e) {
+                    displayException(e);
+                }
+            };
+            if (newValue === DUMMY) {
+                value.dummy = true;
+            }
+        }
+    });
+});
+
+var DUMMY = function() {};
+
+p.draw = DUMMY;
+p.background(255, 255, 255);
+
 
 // Persists objects between code changes and re-runs of the code.
 const persistentContext = {};
@@ -14231,21 +14271,6 @@ let context = {};
 // TODO: figure out how to save space if multiple identifiers point to the same object
 const objectHashes = {};
 
-
-
-const eventHandlers = [
-    "draw",
-    "mouseClicked",
-    "mousePressed",
-    "mouseReleased",
-    "mouseMoved",
-    "mouseDragged",
-    "mouseOver",
-    "mouseOut",
-    "keyPressed",
-    "keyReleased",
-    "keyTyped"
-];
 
 const props = [];
 // processing object's have multiple levels in their hierarchy and we want to
@@ -14332,13 +14357,19 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 
 // TODO: provide a hook to reset the seed for manual restarts of the program
 var seed = Math.floor(Math.random() * 4294967296);
-var DUMMY = function() {};
 
 const beforeMain = function() {
     p.randomSeed(seed);
 
     // TODO: figure out a good way to track this state along with the rest
     p.angleMode = 'degrees';
+
+    // If there was no 'draw' defined, clear the background.
+    // This needs to be done before clearing all the event handlers b/c 'draw'
+    // is included in 'eventHandlers'
+    if (p.draw.dummy) {
+        p.background(255, 255, 255);
+    }
 
     eventHandlers.forEach(eventName => {
         p[eventName] = DUMMY;
@@ -14530,6 +14561,7 @@ const transform = function(code, libraryObject, customWindow) {
     const globals = {};
 
     let scopes = [globals];
+    let currentFunction = null;
 
     const envName = '__env__';
 
@@ -14543,6 +14575,7 @@ const transform = function(code, libraryObject, customWindow) {
                     scope[param.name] = true;
                 });
                 scopes.push(scope);
+                currentFunction = node;
             }
             // Add any variables declared to the current scope.  This handles
             // variable declarations with multiple declarators, e.g. var x = 5, y = 10;
@@ -14721,6 +14754,10 @@ const transform = function(code, libraryObject, customWindow) {
                 // Remove all local variables from the scopes stack as we exit
                 // the function expression/declaration.
                 scopes.pop();
+                currentFunction = node;
+            } else if (node.type === 'ThisExpression') {
+                currentFunction.usesThis = true;
+                return b.Identifier('_this');
             }
         }
     });
@@ -14733,19 +14770,25 @@ const transform = function(code, libraryObject, customWindow) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
 
-                // TODO: don't swallow exception, call a global method to report the error
-                node.body = b.BlockStatement([
-                    b.TryStatement(body,
-                        b.CatchClause(b.Identifier('e'), b.BlockStatement([
-                            b.CallExpression(
-                                b.Identifier('displayException'),
-                                [
-                                    b.Identifier('e')
-                                ]
+                if (node.usesThis) {
+                    body.body.unshift(
+                        b.ExpressionStatement(
+                            b.AssignmentExpression(
+                                b.Identifier('_this'),
+                                '=',
+                                b.ConditionalExpression(
+                                    b.BinaryExpression(
+                                        b.ThisExpression(),
+                                        '===',
+                                        b.Identifier('window')
+                                    ),
+                                    b.Identifier('customWindow'),
+                                    b.ThisExpression()
+                                )
                             )
-                        ]))
-                    )
-                ]);
+                        )
+                    );
+                }
 
                 if (parent && parent.type === 'AssignmentExpression') {
                     const name = getName(parent.left);
@@ -14774,18 +14817,6 @@ const transform = function(code, libraryObject, customWindow) {
                     ),
                     b.Identifier('_')
                 ]);
-            }
-        }
-    });
-
-    estraverse.replace(ast, {
-        leave(node, parent) {
-            if (node.type === 'ThisExpression') {
-                return b.ConditionalExpression(
-                    b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')),
-                    b.Identifier('customWindow'),
-                    b.ThisExpression()
-                );
             }
         }
     });
