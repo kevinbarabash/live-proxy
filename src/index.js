@@ -97,11 +97,17 @@ eventHandlers.forEach(name => {
                     displayException(e);
                 }
             };
+            if (newValue === DUMMY) {
+                value.dummy = true;
+            }
         }
     });
 });
 
-p.draw = function () {};
+var DUMMY = function() {};
+
+p.draw = DUMMY;
+p.background(255, 255, 255);
 
 
 // Persists objects between code changes and re-runs of the code.
@@ -204,13 +210,19 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 
 // TODO: provide a hook to reset the seed for manual restarts of the program
 var seed = Math.floor(Math.random() * 4294967296);
-var DUMMY = function() {};
 
 const beforeMain = function() {
     p.randomSeed(seed);
 
     // TODO: figure out a good way to track this state along with the rest
     p.angleMode = 'degrees';
+
+    // If there was no 'draw' defined, clear the background.
+    // This needs to be done before clearing all the event handlers b/c 'draw'
+    // is included in 'eventHandlers'
+    if (p.draw.dummy) {
+        p.background(255, 255, 255);
+    }
 
     eventHandlers.forEach(eventName => {
         p[eventName] = DUMMY;
