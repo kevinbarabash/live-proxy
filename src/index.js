@@ -286,7 +286,11 @@ const handleUpdate = function() {
                 }
             });
 
-            const func = new Function('__env__', 'customWindow', '__p__', 'displayException', transformedCode);
+            const getSource = function(start, end) {
+                return code.substring(start, end);
+            };
+
+            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
@@ -296,7 +300,7 @@ const handleUpdate = function() {
 
             beforeMain();
 
-            func(context, customWindow.window, p, displayException);
+            func(context, customWindow.window, p, getSource);
 
             afterMain();
 
@@ -339,6 +343,8 @@ const createProxy = function(constructor) {
         ProxyClass.prototype[name] = constructor.prototype[name];
     });
 
+    ProxyClass.toString = constructor.toString;
+
     ProxyClass.update = function(newConstructor) {
         currentConstructor = newConstructor;
 
@@ -347,6 +353,8 @@ const createProxy = function(constructor) {
         Object.keys(newConstructor.prototype).forEach(name => {
             ProxyClass.prototype[name] = newConstructor.prototype[name];
         });
+
+        ProxyClass.toString = newConstructor.toString;
     };
 
     return ProxyClass;

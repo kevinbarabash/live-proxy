@@ -298,8 +298,12 @@ const transform = function(code, libraryObject, customWindow) {
                         '=',
                         b.FunctionExpression(b.BlockStatement([
                             b.ReturnStatement(
-                                b.ExpressionStatement(
-                                    b.Literal(code.substring(node.range[0], node.range[1]))
+                                b.CallExpression(
+                                    b.Identifier('getSource'),
+                                    [
+                                        b.Literal(node.range[0]),
+                                        b.Literal(node.range[1])
+                                    ]
                                 )
                             )
                         ]))
