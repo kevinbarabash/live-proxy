@@ -21,7 +21,13 @@ const stateModifiers = [
     'rectMode',
     'stroke',
     'strokeCap',
-    'strokeWeight'
+    'strokeWeight',
+    'textAlign',
+    'textAscent',
+    'textDescent',
+    'textFont',
+    'textLeading',
+    'textSize',
 ];
 
 const eventHandlers = [
@@ -35,7 +41,7 @@ const eventHandlers = [
     "mouseOut",
     "keyPressed",
     "keyReleased",
-    "keyTyped"
+    "keyTyped",
 ];
 
 const clone = function(obj) {
@@ -56,6 +62,12 @@ const state = {
     stroke: [0, 0, 0],
     strokeCap: [p.ROUND],
     strokeWeight: [1],
+    textAlign: [37, 0],
+    textAscent: [9],
+    textDescent: [12],
+    textFont: ["Arial", 12],
+    textLeading: [14],
+    textSize: [1],
 };
 
 // the snapshot is always the value of the state after running main
