@@ -14168,7 +14168,13 @@ const stateModifiers = [
     'rectMode',
     'stroke',
     'strokeCap',
-    'strokeWeight'
+    'strokeWeight',
+    'textAlign',
+    'textAscent',
+    'textDescent',
+    'textFont',
+    'textLeading',
+    'textSize',
 ];
 
 const eventHandlers = [
@@ -14182,7 +14188,7 @@ const eventHandlers = [
     "mouseOut",
     "keyPressed",
     "keyReleased",
-    "keyTyped"
+    "keyTyped",
 ];
 
 const clone = function(obj) {
@@ -14203,6 +14209,12 @@ const state = {
     stroke: [0, 0, 0],
     strokeCap: [p.ROUND],
     strokeWeight: [1],
+    textAlign: [37, 0],
+    textAscent: [9],
+    textDescent: [12],
+    textFont: ["Arial", 12],
+    textLeading: [14],
+    textSize: [1],
 };
 
 // the snapshot is always the value of the state after running main
@@ -14433,7 +14445,11 @@ const handleUpdate = function() {
                 }
             });
 
-            const func = new Function('__env__', 'customWindow', '__p__', 'displayException', transformedCode);
+            const getSource = function(start, end) {
+                return code.substring(start, end);
+            };
+
+            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
@@ -14443,7 +14459,7 @@ const handleUpdate = function() {
 
             beforeMain();
 
-            func(context, customWindow.window, p, displayException);
+            func(context, customWindow.window, p, getSource);
 
             afterMain();
 
@@ -14486,6 +14502,8 @@ const createProxy = function(constructor) {
         ProxyClass.prototype[name] = constructor.prototype[name];
     });
 
+    ProxyClass.toString = constructor.toString;
+
     ProxyClass.update = function(newConstructor) {
         currentConstructor = newConstructor;
 
@@ -14494,6 +14512,8 @@ const createProxy = function(constructor) {
         Object.keys(newConstructor.prototype).forEach(name => {
             ProxyClass.prototype[name] = newConstructor.prototype[name];
         });
+
+        ProxyClass.toString = newConstructor.toString;
     };
 
     return ProxyClass;
@@ -14665,10 +14685,14 @@ const transform = function(code, libraryObject, customWindow) {
                     // special, they should be treated in the exact same way.
                     if (scopes.length === 1) {
                         if (["Program", "BlockStatement", "SwitchCase"].includes(parent.type)) {
+                            const objectName = decl.id.name in libraryObject
+                                ? '__p__'
+                                : envName;
+
                             return b.ExpressionStatement(
                                 b.AssignmentExpression(
                                     b.MemberExpression(
-                                        b.Identifier(envName),
+                                        b.Identifier(objectName),
                                         b.Identifier(decl.id.name)),
                                     "=",
                                     decl.init
@@ -14682,7 +14706,7 @@ const transform = function(code, libraryObject, customWindow) {
                                 // e.g. for (var i = 0; i < 10; i++) { ... } =>
                                 //      for (__env__.i = 0; __env__.i < 10; __env__.i++)
                                 return b.AssignmentExpression(
-                                    b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
+                                    b.MemberExpression(b.Identifier(envName), b.Identifier(decl.id.name)),
                                     "=",
                                     decl.init
                                 );
@@ -14809,8 +14833,12 @@ const transform = function(code, libraryObject, customWindow) {
                         '=',
                         b.FunctionExpression(b.BlockStatement([
                             b.ReturnStatement(
-                                b.ExpressionStatement(
-                                    b.Literal(code.substring(node.range[0], node.range[1]))
+                                b.CallExpression(
+                                    b.Identifier('getSource'),
+                                    [
+                                        b.Literal(node.range[0]),
+                                        b.Literal(node.range[1])
+                                    ]
                                 )
                             )
                         ]))
