@@ -154,10 +154,14 @@ const transform = function(code, libraryObject, customWindow) {
                     // special, they should be treated in the exact same way.
                     if (scopes.length === 1) {
                         if (["Program", "BlockStatement", "SwitchCase"].includes(parent.type)) {
+                            const objectName = decl.id.name in libraryObject
+                                ? '__p__'
+                                : envName;
+
                             return b.ExpressionStatement(
                                 b.AssignmentExpression(
                                     b.MemberExpression(
-                                        b.Identifier(envName),
+                                        b.Identifier(objectName),
                                         b.Identifier(decl.id.name)),
                                     "=",
                                     decl.init
@@ -171,7 +175,7 @@ const transform = function(code, libraryObject, customWindow) {
                                 // e.g. for (var i = 0; i < 10; i++) { ... } =>
                                 //      for (__env__.i = 0; __env__.i < 10; __env__.i++)
                                 return b.AssignmentExpression(
-                                    b.MemberExpression(b.Identifier(envName),b.Identifier(decl.id.name)),
+                                    b.MemberExpression(b.Identifier(envName), b.Identifier(decl.id.name)),
                                     "=",
                                     decl.init
                                 );
