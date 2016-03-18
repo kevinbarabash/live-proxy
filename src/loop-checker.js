@@ -1,7 +1,7 @@
-let elapsed = 0;
-let start = 0;
-let delay = 500;
-let total = 0;
+var elapsed = 0;
+var start = 0;
+var delay = 500;
+var total = 0;
 
 var reset = function() {
     elapsed = 0;
