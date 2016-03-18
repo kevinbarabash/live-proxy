@@ -13941,6 +13941,16 @@ module.exports = {
             right: right
         };
     },
+
+    UnaryExpression(operator, prefix, argument) {
+        return {
+            type: "UnaryExpression",
+            operator: operator,
+            prefix: prefix,
+            argument: argument
+        };
+    },
+
     /**
      * @param {Array} body: an array of Expressions
      */
@@ -13961,6 +13971,15 @@ module.exports = {
             arguments: args
         };
     },
+
+    NewExpression(callee, args) {
+        return {
+            type: "NewExpression",
+            callee: callee,
+            arguments: args
+        };
+    },
+
     /**
      * @param {Expression} expression
      */
@@ -14091,6 +14110,13 @@ module.exports = {
         };
     },
 
+    ThrowStatement(argument) {
+        return {
+            type: "ThrowStatement",
+            argument: argument
+        };
+    },
+
     /**
      * @param {Array} declarations
      * @param {string} kind: "var", "let", "const"
@@ -14100,6 +14126,14 @@ module.exports = {
             type: "VariableDeclaration",
             declarations: declarations,
             kind: kind
+        };
+    },
+
+    VariableDeclarator(id, init) {
+        return {
+            type: "VariableDeclarator",
+            id: id,
+            init: init,
         };
     }
 };
@@ -14147,6 +14181,7 @@ module.exports = {
 },{}],28:[function(require,module,exports){
 const transform = require('./transform');
 const customWindow = require('./custom-window');
+const loopChecker = require('./loop-checker');
 
 const canvas = document.getElementById("canvas");
 
@@ -14449,7 +14484,7 @@ const handleUpdate = function() {
                 return code.substring(start, end);
             };
 
-            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', transformedCode);
+            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', 'loopChecker', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
@@ -14459,7 +14494,7 @@ const handleUpdate = function() {
 
             beforeMain();
 
-            func(context, customWindow.window, p, getSource);
+            func(context, customWindow.window, p, getSource, loopChecker);
 
             afterMain();
 
@@ -14528,7 +14563,49 @@ fetch('example_2.js')
         selection.moveCursorFileStart();
     });
 
-},{"./custom-window":27,"./transform":29}],29:[function(require,module,exports){
+},{"./custom-window":27,"./loop-checker":29,"./transform":30}],29:[function(require,module,exports){
+var elapsed = 0;
+var start = 0;
+var delay = 500;
+var total = 0;
+
+var reset = function() {
+    elapsed = 0;
+    delay = 500;
+    start = Date.now();
+};
+
+var YES = true;
+
+var check = function() {
+    elapsed = Date.now() - start;
+    if (elapsed > delay) {
+        total += delay;
+        const response = window.confirm(
+            'Browser feeling laggy?\n\n' +
+            `This program has been running for ${total} milliseconds ` +
+            'without letting the browser do the stuff it needs to do.\n\n' +
+            'Cancel to stop the program.\n' +
+            'OK to keep running.'
+        );
+
+        if (response === YES) {
+            elapsed = 0;
+            delay = delay * 2;
+            start = Date.now();
+        } else {
+            delay = 500;
+            throw new Error('Infinite Loop');
+        }
+    }
+};
+
+module.exports = {
+    check: check,
+    reset: reset
+};
+
+},{}],30:[function(require,module,exports){
 const esprima = require('esprima');
 const escodegen = require('escodegen');
 const estraverse = require('estraverse');
@@ -14572,11 +14649,14 @@ var getName = function(node) {
 // TODO: allow an array of objects to pull global references from
 const transform = function(code, libraryObject, customWindow) {
     const ast = esprima.parse(code, { range: true });
+    console.log(ast);
 
-    let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
+    const drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
         "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver",
         "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel",
         "keyPressed", "keyReleased", "keyTyped"];
+
+    const riskyNodes = ['ForStatement', 'WhileStatement', 'DoWhileStatement'];
 
     const globals = {};
 
@@ -14782,6 +14862,26 @@ const transform = function(code, libraryObject, customWindow) {
             } else if (node.type === 'ThisExpression') {
                 currentFunction.usesThis = true;
                 return b.Identifier('_this');
+            } else if (node.type === 'Program') {
+                node.body.unshift(
+                    b.ExpressionStatement(
+                        b.CallExpression(
+                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')),
+                            []
+                        )
+                    )
+                );
+            }
+
+            if (riskyNodes.includes(node.type)) {
+                node.body.body.unshift(
+                    b.ExpressionStatement(
+                        b.CallExpression(
+                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('check')),
+                            []
+                        )
+                    )
+                );
             }
         }
     });
@@ -14794,22 +14894,33 @@ const transform = function(code, libraryObject, customWindow) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
 
+                body.body.unshift(
+                    b.ExpressionStatement(
+                        b.CallExpression(
+                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')),
+                            []
+                        )
+                    )
+                );
+
                 if (node.usesThis) {
                     body.body.unshift(
-                        b.ExpressionStatement(
-                            b.AssignmentExpression(
-                                b.Identifier('_this'),
-                                '=',
-                                b.ConditionalExpression(
-                                    b.BinaryExpression(
-                                        b.ThisExpression(),
-                                        '===',
-                                        b.Identifier('window')
-                                    ),
-                                    b.Identifier('customWindow'),
-                                    b.ThisExpression()
+                        b.VariableDeclaration(
+                            [
+                                b.VariableDeclarator(
+                                    b.Identifier('_this'),
+                                    b.ConditionalExpression(
+                                        b.BinaryExpression(
+                                            b.ThisExpression(),
+                                            '===',
+                                            b.Identifier('window')
+                                        ),
+                                        b.Identifier('customWindow'),
+                                        b.ThisExpression()
+                                    )
                                 )
-                            )
+                            ],
+                            'var'
                         )
                     );
                 }
