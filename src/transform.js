@@ -41,11 +41,14 @@ var getName = function(node) {
 // TODO: allow an array of objects to pull global references from
 const transform = function(code, libraryObject, customWindow) {
     const ast = esprima.parse(code, { range: true });
+    console.log(ast);
 
-    let drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
+    const drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
         "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver",
         "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel",
         "keyPressed", "keyReleased", "keyTyped"];
+
+    const riskyNodes = ['ForStatement', 'WhileStatement', 'DoWhileStatement'];
 
     const globals = {};
 
@@ -251,6 +254,26 @@ const transform = function(code, libraryObject, customWindow) {
             } else if (node.type === 'ThisExpression') {
                 currentFunction.usesThis = true;
                 return b.Identifier('_this');
+            } else if (node.type === 'Program') {
+                node.body.unshift(
+                    b.ExpressionStatement(
+                        b.CallExpression(
+                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')),
+                            []
+                        )
+                    )
+                );
+            }
+
+            if (riskyNodes.includes(node.type)) {
+                node.body.body.unshift(
+                    b.ExpressionStatement(
+                        b.CallExpression(
+                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('check')),
+                            []
+                        )
+                    )
+                );
             }
         }
     });
@@ -263,22 +286,33 @@ const transform = function(code, libraryObject, customWindow) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
 
+                body.body.unshift(
+                    b.ExpressionStatement(
+                        b.CallExpression(
+                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')),
+                            []
+                        )
+                    )
+                );
+
                 if (node.usesThis) {
                     body.body.unshift(
-                        b.ExpressionStatement(
-                            b.AssignmentExpression(
-                                b.Identifier('_this'),
-                                '=',
-                                b.ConditionalExpression(
-                                    b.BinaryExpression(
-                                        b.ThisExpression(),
-                                        '===',
-                                        b.Identifier('window')
-                                    ),
-                                    b.Identifier('customWindow'),
-                                    b.ThisExpression()
+                        b.VariableDeclaration(
+                            [
+                                b.VariableDeclarator(
+                                    b.Identifier('_this'),
+                                    b.ConditionalExpression(
+                                        b.BinaryExpression(
+                                            b.ThisExpression(),
+                                            '===',
+                                            b.Identifier('window')
+                                        ),
+                                        b.Identifier('customWindow'),
+                                        b.ThisExpression()
+                                    )
                                 )
-                            )
+                            ],
+                            'var'
                         )
                     );
                 }

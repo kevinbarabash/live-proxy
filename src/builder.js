@@ -25,6 +25,16 @@ module.exports = {
             right: right
         };
     },
+
+    UnaryExpression(operator, prefix, argument) {
+        return {
+            type: "UnaryExpression",
+            operator: operator,
+            prefix: prefix,
+            argument: argument
+        };
+    },
+
     /**
      * @param {Array} body: an array of Expressions
      */
@@ -45,6 +55,15 @@ module.exports = {
             arguments: args
         };
     },
+
+    NewExpression(callee, args) {
+        return {
+            type: "NewExpression",
+            callee: callee,
+            arguments: args
+        };
+    },
+
     /**
      * @param {Expression} expression
      */
@@ -175,6 +194,13 @@ module.exports = {
         };
     },
 
+    ThrowStatement(argument) {
+        return {
+            type: "ThrowStatement",
+            argument: argument
+        };
+    },
+
     /**
      * @param {Array} declarations
      * @param {string} kind: "var", "let", "const"
@@ -184,6 +210,14 @@ module.exports = {
             type: "VariableDeclaration",
             declarations: declarations,
             kind: kind
+        };
+    },
+
+    VariableDeclarator(id, init) {
+        return {
+            type: "VariableDeclarator",
+            id: id,
+            init: init,
         };
     }
 };

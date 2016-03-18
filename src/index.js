@@ -1,5 +1,6 @@
 const transform = require('./transform');
 const customWindow = require('./custom-window');
+const loopChecker = require('./loop-checker');
 
 const canvas = document.getElementById("canvas");
 
@@ -302,7 +303,7 @@ const handleUpdate = function() {
                 return code.substring(start, end);
             };
 
-            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', transformedCode);
+            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', 'loopChecker', transformedCode);
             // TODO: expand funcList to include all data types
             const funcList = {};    // functions being defined during this run
             context = {};
@@ -312,7 +313,7 @@ const handleUpdate = function() {
 
             beforeMain();
 
-            func(context, customWindow.window, p, getSource);
+            func(context, customWindow.window, p, getSource, loopChecker);
 
             afterMain();
 
