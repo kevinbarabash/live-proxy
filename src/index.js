@@ -1,3 +1,6 @@
+require('babel-polyfill');
+require('whatwg-fetch');
+
 const { handleUpdate } = require('./live-proxy');
 
 const displayLint = function(messages) {
