@@ -16,7 +16,12 @@ const displayException = function(e) {
     const messageContainer = document.querySelector('#messages');
 
     messageContainer.innerHTML = `${e.name}: ${e.message}`;
+
+    // TODO: should actually stop the program
 };
+
+// TODO: make this less hacky (processing-environment.js uses this)
+window.displayException = displayException;
 
 fetch('example_2.js')
     .then(res => res.text())

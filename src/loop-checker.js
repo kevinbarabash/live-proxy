@@ -24,11 +24,11 @@ var check = function() {
         );
 
         if (response === YES) {
-            elapsed = 0;
             delay = delay * 2;
             start = Date.now();
         } else {
             delay = 500;
+            start = Date.now();
             throw new Error('Infinite Loop');
         }
     }

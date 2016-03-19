@@ -43,6 +43,8 @@ const transform = function(code, libraryObject, customWindow) {
     const ast = esprima.parse(code, { range: true });
     console.log(ast);
 
+    // TODO: grab these from the environment
+    // TODO: refer to these as entry points in the future
     const drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved",
         "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver",
         "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel",
@@ -255,6 +257,7 @@ const transform = function(code, libraryObject, customWindow) {
                 currentFunction.usesThis = true;
                 return b.Identifier('_this');
             } else if (node.type === 'Program') {
+                console.log(node.body);
                 node.body.unshift(
                     b.ExpressionStatement(
                         b.CallExpression(
@@ -286,14 +289,34 @@ const transform = function(code, libraryObject, customWindow) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
 
-                body.body.unshift(
-                    b.ExpressionStatement(
-                        b.CallExpression(
-                            b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')),
-                            []
+                if (parent && parent.type === 'AssignmentExpression') {
+                    const name = getName(parent.left);
+                    const parts = name.split('.');
+                    if (parts[0] === '__env__') {
+                        node.id = b.Identifier(parts[parts.length - 1]);
+                    }
+                }
+
+                if (node.id && drawLoopMethods.includes(node.id.name)) {
+                    body.body.unshift(
+                        b.ExpressionStatement(
+                            b.CallExpression(
+                                b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')),
+                                []
+                            )
                         )
-                    )
-                );
+                    );
+                } else {
+                    body.body.unshift(
+                        b.ExpressionStatement(
+                            b.CallExpression(
+                                b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('check')),
+                                []
+                            )
+                        )
+                    );
+                }
+
 
                 if (node.usesThis) {
                     body.body.unshift(
@@ -315,14 +338,6 @@ const transform = function(code, libraryObject, customWindow) {
                             'var'
                         )
                     );
-                }
-
-                if (parent && parent.type === 'AssignmentExpression') {
-                    const name = getName(parent.left);
-                    const parts = name.split('.');
-                    if (parts[0] === '__env__') {
-                        node.id = b.Identifier(parts[parts.length - 1]);
-                    }
                 }
 
                 return b.SequenceExpression([
