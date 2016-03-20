@@ -8,6 +8,115 @@ const p = new Processing(canvas, (processing) => {
 });
 
 
+const loadImage = function(filename) {
+    const img = document.createElement('img');
+
+    const promise = new Promise((resolve, reject) => {
+        img.onload = function() {
+            cache[filename] = img;
+            resolve();
+        }.bind(this);
+        img.onerror = function() {
+            resolve(); // always resolve
+        }.bind(this);
+    });
+
+    img.src = `images/${filename}.png`;
+
+    return promise;
+};
+
+const avatars = [
+    'aqualine-sapling',
+    'aqualine-seed',
+    'aqualine-seedling',
+    'aqualine-tree',
+    'aqualine-ultimate',
+    'avatar-team',
+    'cs-hopper-cool',
+    'cs-hopper-happy',
+    'cs-hopper-jumping',
+    'cs-ohnoes',
+    'cs-winston-baby',
+    'cs-winston',
+    'duskpin-sapling',
+    'duskpin-seed',
+    'duskpin-seedling',
+    'duskpin-tree',
+    'duskpin-ultimate',
+    'leaf-blue',
+    'leaf-green',
+    'leaf-grey',
+    'leaf-orange',
+    'leaf-red',
+    'leaf-yellow',
+    'leafers-sapling',
+    'leafers-seed',
+    'leafers-seedling',
+    'leafers-tree',
+    'leafers-ultimate',
+    'marcimus-orange',
+    'marcimus-purple',
+    'marcimus-red',
+    'marcimus',
+    'mr-pants-green',
+    'mr-pants-orange',
+    'mr-pants-pink',
+    'mr-pants-purple',
+    'mr-pants-with-hat',
+    'mr-pants',
+    'mr-pink-green',
+    'mr-pink-orange',
+    'mr-pink',
+    'mystery-1',
+    'mystery-2',
+    'old-spice-man-blue',
+    'old-spice-man',
+    'orange-juice-squid',
+    'piceratops-sapling',
+    'piceratops-seed',
+    'piceratops-seedling',
+    'piceratops-tree',
+    'piceratops-ultimate',
+    'primosaur-sapling',
+    'primosaur-seed',
+    'primosaur-seedling',
+    'primosaur-tree',
+    'primosaur-ultimate',
+    'purple-pi-pink',
+    'purple-pi-teal',
+    'purple-pi',
+    'questionmark',
+    'robot_female_1',
+    'robot_female_2',
+    'robot_female_3',
+    'robot_male_1',
+    'robot_male_2',
+    'robot_male_3',
+    'spunky-sam-green',
+    'spunky-sam-orange',
+    'spunky-sam-red',
+    'spunky-sam',
+    'starky-sapling',
+    'starky-seed',
+    'starky-seedling',
+    'starky-tree',
+    'starky-ultimate',
+];
+
+avatars.forEach(avatar => {
+    loadImage(`avatars/${avatar}`).then(() => {
+        console.log(`avatars/${avatar} loaded`);
+    });
+});
+
+const cache = {};
+
+p.getImage = function(filename) {
+    return new p.PImage(cache[filename]);
+};
+
+
 // expose p as a global for debugging purposes
 window.p = p;
 
