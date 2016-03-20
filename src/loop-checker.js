@@ -1,7 +1,10 @@
+require('visibly.js');
+
 var elapsed = 0;
 var start = 0;
 var delay = 500;
 var total = 0;
+var disabled = false;
 
 var reset = function() {
     elapsed = 0;
@@ -12,6 +15,8 @@ var reset = function() {
 var YES = true;
 
 var check = function() {
+    if (disabled) return;
+
     elapsed = Date.now() - start;
     if (elapsed > delay) {
         total += delay;
@@ -33,6 +38,15 @@ var check = function() {
         }
     }
 };
+
+visibly.onHidden(() => {
+    disabled = true;
+});
+
+visibly.onVisible(() => {
+    disabled = false;
+    reset();
+});
 
 module.exports = {
     check: check,
