@@ -20389,6 +20389,139 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],318:[function(require,module,exports){
+/*!
+ * visibly - v0.7 Page Visibility API Polyfill
+ * http://github.com/addyosmani
+ * Copyright (c) 2011-2014 Addy Osmani
+ * Dual licensed under the MIT and GPL licenses.
+ *
+ * Methods supported:
+ * visibly.onVisible(callback)
+ * visibly.onHidden(callback)
+ * visibly.hidden()
+ * visibly.visibilityState()
+ * visibly.visibilitychange(callback(state));
+ */
+
+;(function () {
+
+    window.visibly = {
+        q: document,
+        p: undefined,
+        prefixes: ['webkit', 'ms','o','moz','khtml'],
+        props: ['VisibilityState', 'visibilitychange', 'Hidden'],
+        m: ['focus', 'blur'],
+        visibleCallbacks: [],
+        hiddenCallbacks: [],
+        genericCallbacks:[],
+        _callbacks: [],
+        cachedPrefix:"",
+        fn:null,
+
+        onVisible: function (_callback) {
+            if(typeof _callback == 'function' ){
+                this.visibleCallbacks.push(_callback);
+            }
+        },
+        onHidden: function (_callback) {
+            if(typeof _callback == 'function' ){
+                this.hiddenCallbacks.push(_callback);
+            }
+        },
+        getPrefix:function(){
+            if(!this.cachedPrefix){
+                for(var l=0,b;b=this.prefixes[l++];){
+                    if(b + this.props[2] in this.q){
+                        this.cachedPrefix =  b;
+                        return this.cachedPrefix;
+                    }
+                }
+             }
+        },
+
+        visibilityState:function(){
+            return  this._getProp(0);
+        },
+        hidden:function(){
+            return this._getProp(2);
+        },
+        visibilitychange:function(fn){
+            if(typeof fn == 'function' ){
+                this.genericCallbacks.push(fn);
+            }
+
+            var n =  this.genericCallbacks.length;
+            if(n){
+                if(this.cachedPrefix){
+                     while(n--){
+                        this.genericCallbacks[n].call(this, this.visibilityState());
+                    }
+                }else{
+                    while(n--){
+                        this.genericCallbacks[n].call(this, arguments[0]);
+                    }
+                }
+            }
+
+        },
+        isSupported: function (index) {
+            return ((this._getPropName(2)) in this.q);
+        },
+        _getPropName:function(index) {
+            return (this.cachedPrefix == "" ? this.props[index].substring(0, 1).toLowerCase() + this.props[index].substring(1) : this.cachedPrefix + this.props[index]);
+        },
+        _getProp:function(index){
+            return this.q[this._getPropName(index)];
+        },
+        _execute: function (index) {
+            if (index) {
+                this._callbacks = (index == 1) ? this.visibleCallbacks : this.hiddenCallbacks;
+                var n =  this._callbacks.length;
+                while(n--){
+                    this._callbacks[n]();
+                }
+            }
+        },
+        _visible: function () {
+            window.visibly._execute(1);
+            window.visibly.visibilitychange.call(window.visibly, 'visible');
+        },
+        _hidden: function () {
+            window.visibly._execute(2);
+            window.visibly.visibilitychange.call(window.visibly, 'hidden');
+        },
+        _nativeSwitch: function () {
+            this[this._getProp(2) ? '_hidden' : '_visible']();
+        },
+        _listen: function () {
+            try { /*if no native page visibility support found..*/
+                if (!(this.isSupported())) {
+                    if (this.q.addEventListener) { /*for browsers without focusin/out support eg. firefox, opera use focus/blur*/
+                        window.addEventListener(this.m[0], this._visible, 1);
+                        window.addEventListener(this.m[1], this._hidden, 1);
+                    } else { /*IE <10s most reliable focus events are onfocusin/onfocusout*/
+                        if (this.q.attachEvent) {
+                            this.q.attachEvent('onfocusin', this._visible);
+                            this.q.attachEvent('onfocusout', this._hidden);
+                        }
+                    }
+                } else { /*switch support based on prefix detected earlier*/
+                    this.q.addEventListener(this._getPropName(1), function () {
+                        window.visibly._nativeSwitch.apply(window.visibly, arguments);
+                    }, 1);
+                }
+            } catch (e) {}
+        },
+        init: function () {
+            this.getPrefix();
+            this._listen();
+        }
+    };
+
+    this.visibly.init();
+})();
+
+},{}],319:[function(require,module,exports){
 (function(self) {
   'use strict';
 
@@ -20779,7 +20912,7 @@ process.umask = function() { return 0; };
   self.fetch.polyfill = true
 })(typeof self !== 'undefined' ? self : this);
 
-},{}],319:[function(require,module,exports){
+},{}],320:[function(require,module,exports){
 "use strict";
 
 module.exports = {
@@ -21017,7 +21150,7 @@ module.exports = {
     }
 };
 
-},{}],320:[function(require,module,exports){
+},{}],321:[function(require,module,exports){
 "use strict";
 
 // TODO: make pre-defined items unconfigurable but allow globals to be created
@@ -21059,7 +21192,7 @@ module.exports = {
     globals: globals
 };
 
-},{}],321:[function(require,module,exports){
+},{}],322:[function(require,module,exports){
 'use strict';
 
 require('babel-polyfill');
@@ -21082,7 +21215,12 @@ var displayException = function displayException(e) {
     var messageContainer = document.querySelector('#messages');
 
     messageContainer.innerHTML = e.name + ': ' + e.message;
+
+    // TODO: should actually stop the program
 };
+
+// TODO: make this less hacky (processing-environment.js uses this)
+window.displayException = displayException;
 
 fetch('example_2.js').then(function (res) {
     return res.text();
@@ -21095,7 +21233,7 @@ fetch('example_2.js').then(function (res) {
     selection.moveCursorFileStart();
 });
 
-},{"./live-proxy":322,"babel-polyfill":2,"whatwg-fetch":318}],322:[function(require,module,exports){
+},{"./live-proxy":323,"babel-polyfill":2,"whatwg-fetch":319}],323:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
@@ -21260,13 +21398,16 @@ module.exports = {
     handleUpdate: handleUpdate
 };
 
-},{"./custom-window":320,"./loop-checker":323,"./processing-environment":324,"./proxy":325,"./transform":326}],323:[function(require,module,exports){
+},{"./custom-window":321,"./loop-checker":324,"./processing-environment":325,"./proxy":326,"./transform":327}],324:[function(require,module,exports){
 'use strict';
+
+require('visibly.js');
 
 var elapsed = 0;
 var start = 0;
 var delay = 500;
 var total = 0;
+var disabled = false;
 
 var reset = function reset() {
     elapsed = 0;
@@ -21277,28 +21418,39 @@ var reset = function reset() {
 var YES = true;
 
 var check = function check() {
+    if (disabled) return;
+
     elapsed = Date.now() - start;
     if (elapsed > delay) {
         total += delay;
         var response = window.confirm('Browser feeling laggy?\n\n' + ('This program has been running for ' + total + ' milliseconds ') + 'without letting the browser do the stuff it needs to do.\n\n' + 'Cancel to stop the program.\n' + 'OK to keep running.');
 
         if (response === YES) {
-            elapsed = 0;
             delay = delay * 2;
             start = Date.now();
         } else {
             delay = 500;
+            start = Date.now();
             throw new Error('Infinite Loop');
         }
     }
 };
+
+visibly.onHidden(function () {
+    disabled = true;
+});
+
+visibly.onVisible(function () {
+    disabled = false;
+    reset();
+});
 
 module.exports = {
     check: check,
     reset: reset
 };
 
-},{}],324:[function(require,module,exports){
+},{"visibly.js":318}],325:[function(require,module,exports){
 'use strict';
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -21355,7 +21507,8 @@ var state = {
     textDescent: [12],
     textFont: ["Arial", 12],
     textLeading: [14],
-    textSize: [1]
+    textSize: [1],
+    isStroked: true
 };
 
 // the snapshot is always the value of the state after running main
@@ -21363,6 +21516,8 @@ var snapshot = clone(state);
 var defaultState = clone(state);
 var beforeState = {};
 var afterState = {};
+
+var tracking = false;
 
 stateModifiers.forEach(function (name) {
     var func = p[name];
@@ -21374,6 +21529,9 @@ stateModifiers.forEach(function (name) {
                     args[_key] = arguments[_key];
                 }
 
+                if (name === 'stroke' && tracking) {
+                    state.isStroked = true;
+                }
                 // TODO: instead of toggling record... we can just grab the state at a particular point in time
                 // we want to be able to take snapshots of state a different times
                 // compare those snapshots and update the current state appropriately
@@ -21385,6 +21543,26 @@ stateModifiers.forEach(function (name) {
             func = value;
         }
     });
+});
+
+var noStroke = p.noStroke;
+
+Object.defineProperty(p, 'noStroke', {
+    get: function get() {
+        return function () {
+            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
+            }
+
+            if (tracking) {
+                state.isStroked = false;
+            }
+            noStroke.apply(p, args);
+        };
+    },
+    set: function set(value) {
+        noStroke = value;
+    }
 });
 
 eventHandlers.forEach(function (name) {
@@ -21417,6 +21595,8 @@ p.background(255, 255, 255);
 var seed = Math.floor(Math.random() * 4294967296);
 
 var beforeMain = function beforeMain() {
+    tracking = false;
+
     p.randomSeed(seed);
 
     // TODO: figure out a good way to track this state along with the rest
@@ -21440,9 +21620,15 @@ var beforeMain = function beforeMain() {
     stateModifiers.forEach(function (name) {
         p[name].apply(p, _toConsumableArray(defaultState[name]));
     });
+
+    state.isStroked = defaultState.isStroked;
+
+    tracking = true;
 };
 
 var afterMain = function afterMain() {
+    tracking = false;
+
     Object.assign(afterState, clone(state));
 
     // maintain invariant: snapshot is always the state after running main
@@ -21455,6 +21641,21 @@ var afterMain = function afterMain() {
             snapshot[name] = afterState[name];
         }
     });
+
+    if (compare(snapshot.isStroked, afterState.isStroked)) {
+        state.isStroked = beforeState.isStroked;
+    } else {
+        snapshot.isStroked = afterState.isStroked;
+    }
+
+    console.log('snapshot.isStroked = ' + snapshot.isStroked);
+    if (state.isStroked) {
+        p.stroke.apply(p, _toConsumableArray(state.stroke));
+    } else {
+        p.noStroke();
+    }
+
+    tracking = true;
 };
 
 module.exports = {
@@ -21464,7 +21665,7 @@ module.exports = {
     p: p
 };
 
-},{}],325:[function(require,module,exports){
+},{}],326:[function(require,module,exports){
 'use strict';
 
 var createProxy = function createProxy(constructor) {
@@ -21499,7 +21700,7 @@ module.exports = {
     createProxy: createProxy
 };
 
-},{}],326:[function(require,module,exports){
+},{}],327:[function(require,module,exports){
 'use strict';
 
 var esprima = require('esprima');
@@ -21546,6 +21747,8 @@ var transform = function transform(code, libraryObject, customWindow) {
     var ast = esprima.parse(code, { range: true });
     console.log(ast);
 
+    // TODO: grab these from the environment
+    // TODO: refer to these as entry points in the future
     var drawLoopMethods = ["draw", "mouseClicked", "mouseDragged", "mouseMoved", "mousePressed", "mouseReleased", "mouseScrolled", "mouseOver", "mouseOut", "touchStart", "touchEnd", "touchMove", "touchCancel", "keyPressed", "keyReleased", "keyTyped"];
 
     var riskyNodes = ['ForStatement', 'WhileStatement', 'DoWhileStatement'];
@@ -21732,6 +21935,7 @@ var transform = function transform(code, libraryObject, customWindow) {
                     currentFunction.usesThis = true;
                     return b.Identifier('_this');
                 } else if (node.type === 'Program') {
+                    console.log(node.body);
                     node.body.unshift(b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')), [])));
                 }
 
@@ -21749,18 +21953,22 @@ var transform = function transform(code, libraryObject, customWindow) {
             if (/^Function/.test(node.type)) {
                 var body = node.body;
 
-                body.body.unshift(b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')), [])));
-
-                if (node.usesThis) {
-                    body.body.unshift(b.VariableDeclaration([b.VariableDeclarator(b.Identifier('_this'), b.ConditionalExpression(b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')), b.Identifier('customWindow'), b.ThisExpression()))], 'var'));
-                }
-
                 if (parent && parent.type === 'AssignmentExpression') {
                     var name = getName(parent.left);
                     var parts = name.split('.');
-                    if (parts[0] === '__env__') {
+                    if (parts[0] === '__env__' || parts[0] === '__p__') {
                         node.id = b.Identifier(parts[parts.length - 1]);
                     }
+                }
+
+                if (node.id && drawLoopMethods.includes(node.id.name)) {
+                    body.body.unshift(b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')), [])));
+                } else {
+                    body.body.unshift(b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('check')), [])));
+                }
+
+                if (node.usesThis) {
+                    body.body.unshift(b.VariableDeclaration([b.VariableDeclarator(b.Identifier('_this'), b.ConditionalExpression(b.BinaryExpression(b.ThisExpression(), '===', b.Identifier('window')), b.Identifier('customWindow'), b.ThisExpression()))], 'var'));
                 }
 
                 return b.SequenceExpression([b.AssignmentExpression(b.Identifier('_'), '=', node), b.AssignmentExpression(b.MemberExpression(b.Identifier('_'), b.Identifier('toString')), '=', b.FunctionExpression(b.BlockStatement([b.ReturnStatement(b.CallExpression(b.Identifier('getSource'), [b.Literal(node.range[0]), b.Literal(node.range[1])]))]))), b.Identifier('_')]);
@@ -21777,4 +21985,4 @@ var transform = function transform(code, libraryObject, customWindow) {
 
 module.exports = transform;
 
-},{"./builder":319,"escodegen":294,"esprima":309,"estraverse":310}]},{},[321]);
+},{"./builder":320,"escodegen":294,"esprima":309,"estraverse":310}]},{},[322]);
