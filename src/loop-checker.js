@@ -1,14 +1,17 @@
 require('visibly.js');
 
+const defaultDelay = 500;
+
 var elapsed = 0;
 var start = 0;
-var delay = 500;
+var delay = defaultDelay;
 var total = 0;
 var disabled = false;
 
 var reset = function() {
+    total = 0;
     elapsed = 0;
-    delay = 500;
+    delay = defaultDelay;
     start = Date.now();
 };
 
@@ -32,8 +35,7 @@ var check = function() {
             delay = delay * 2;
             start = Date.now();
         } else {
-            delay = 500;
-            start = Date.now();
+            reset();
             throw new Error('Infinite Loop');
         }
     }

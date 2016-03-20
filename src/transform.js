@@ -288,16 +288,20 @@ const transform = function(code, libraryObject, customWindow) {
         leave(node, parent) {
             if (/^Function/.test(node.type)) {
                 const body = node.body;
+                let isEntryPoint = false;
 
                 if (parent && parent.type === 'AssignmentExpression') {
                     const name = getName(parent.left);
                     const parts = name.split('.');
                     if (parts[0] === '__env__' || parts[0] === '__p__') {
                         node.id = b.Identifier(parts[parts.length - 1]);
+                        if (drawLoopMethods.includes(parts[1])) {
+                            isEntryPoint = true;
+                        }
                     }
                 }
 
-                if (node.id && drawLoopMethods.includes(node.id.name)) {
+                if (isEntryPoint) {
                     body.body.unshift(
                         b.ExpressionStatement(
                             b.CallExpression(
