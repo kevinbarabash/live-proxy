@@ -21403,15 +21403,18 @@ module.exports = {
 
 require('visibly.js');
 
+var defaultDelay = 500;
+
 var elapsed = 0;
 var start = 0;
-var delay = 500;
+var delay = defaultDelay;
 var total = 0;
 var disabled = false;
 
 var reset = function reset() {
+    total = 0;
     elapsed = 0;
-    delay = 500;
+    delay = defaultDelay;
     start = Date.now();
 };
 
@@ -21429,8 +21432,7 @@ var check = function check() {
             delay = delay * 2;
             start = Date.now();
         } else {
-            delay = 500;
-            start = Date.now();
+            reset();
             throw new Error('Infinite Loop');
         }
     }
@@ -21463,6 +21465,40 @@ var p = new Processing(canvas, function (processing) {
 
     processing.draw = function () {};
 });
+
+var loadImage = function loadImage(filename) {
+    var _this = this;
+
+    var img = document.createElement('img');
+
+    var promise = new Promise(function (resolve, reject) {
+        img.onload = function () {
+            cache[filename] = img;
+            resolve();
+        }.bind(_this);
+        img.onerror = function () {
+            resolve(); // always resolve
+        }.bind(_this);
+    });
+
+    img.src = 'images/' + filename + '.png';
+
+    return promise;
+};
+
+var avatars = ['aqualine-sapling', 'aqualine-seed', 'aqualine-seedling', 'aqualine-tree', 'aqualine-ultimate', 'avatar-team', 'cs-hopper-cool', 'cs-hopper-happy', 'cs-hopper-jumping', 'cs-ohnoes', 'cs-winston-baby', 'cs-winston', 'duskpin-sapling', 'duskpin-seed', 'duskpin-seedling', 'duskpin-tree', 'duskpin-ultimate', 'leaf-blue', 'leaf-green', 'leaf-grey', 'leaf-orange', 'leaf-red', 'leaf-yellow', 'leafers-sapling', 'leafers-seed', 'leafers-seedling', 'leafers-tree', 'leafers-ultimate', 'marcimus-orange', 'marcimus-purple', 'marcimus-red', 'marcimus', 'mr-pants-green', 'mr-pants-orange', 'mr-pants-pink', 'mr-pants-purple', 'mr-pants-with-hat', 'mr-pants', 'mr-pink-green', 'mr-pink-orange', 'mr-pink', 'mystery-1', 'mystery-2', 'old-spice-man-blue', 'old-spice-man', 'orange-juice-squid', 'piceratops-sapling', 'piceratops-seed', 'piceratops-seedling', 'piceratops-tree', 'piceratops-ultimate', 'primosaur-sapling', 'primosaur-seed', 'primosaur-seedling', 'primosaur-tree', 'primosaur-ultimate', 'purple-pi-pink', 'purple-pi-teal', 'purple-pi', 'questionmark', 'robot_female_1', 'robot_female_2', 'robot_female_3', 'robot_male_1', 'robot_male_2', 'robot_male_3', 'spunky-sam-green', 'spunky-sam-orange', 'spunky-sam-red', 'spunky-sam', 'starky-sapling', 'starky-seed', 'starky-seedling', 'starky-tree', 'starky-ultimate'];
+
+avatars.forEach(function (avatar) {
+    loadImage('avatars/' + avatar).then(function () {
+        console.log('avatars/' + avatar + ' loaded');
+    });
+});
+
+var cache = {};
+
+p.getImage = function (filename) {
+    return new p.PImage(cache[filename]);
+};
 
 // expose p as a global for debugging purposes
 window.p = p;
@@ -21952,16 +21988,20 @@ var transform = function transform(code, libraryObject, customWindow) {
         leave: function leave(node, parent) {
             if (/^Function/.test(node.type)) {
                 var body = node.body;
+                var isEntryPoint = false;
 
                 if (parent && parent.type === 'AssignmentExpression') {
                     var name = getName(parent.left);
                     var parts = name.split('.');
                     if (parts[0] === '__env__' || parts[0] === '__p__') {
                         node.id = b.Identifier(parts[parts.length - 1]);
+                        if (drawLoopMethods.includes(parts[1])) {
+                            isEntryPoint = true;
+                        }
                     }
                 }
 
-                if (node.id && drawLoopMethods.includes(node.id.name)) {
+                if (isEntryPoint) {
                     body.body.unshift(b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('reset')), [])));
                 } else {
                     body.body.unshift(b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier('loopChecker'), b.Identifier('check')), [])));
