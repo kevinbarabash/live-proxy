@@ -85,6 +85,7 @@ const state = {
     textFont: ["Arial", 12],
     textLeading: [14],
     textSize: [1],
+    isStroked: true,
 };
 
 // the snapshot is always the value of the state after running main
@@ -93,13 +94,17 @@ const defaultState = clone(state);
 const beforeState = {};
 const afterState = {};
 
+let tracking = false;
 
 stateModifiers.forEach(name => {
     let func = p[name];
 
-    Object.defineProperty(p, name,  {
+    Object.defineProperty(p, name, {
         get() {
             return (...args) => {
+                if (name === 'stroke' && tracking) {
+                    state.isStroked = true;
+                }
                 // TODO: instead of toggling record... we can just grab the state at a particular point in time
                 // we want to be able to take snapshots of state a different times
                 // compare those snapshots and update the current state appropriately
@@ -111,6 +116,23 @@ stateModifiers.forEach(name => {
             func = value;
         }
     });
+});
+
+
+let noStroke = p.noStroke;
+
+Object.defineProperty(p, 'noStroke', {
+    get() {
+        return (...args) => {
+            if (tracking) {
+                state.isStroked = false;
+            }
+            noStroke.apply(p, args);
+        }
+    },
+    set(value) {
+        noStroke = value;
+    }
 });
 
 eventHandlers.forEach(name => {
@@ -144,6 +166,8 @@ p.background(255, 255, 255);
 var seed = Math.floor(Math.random() * 4294967296);
 
 const beforeMain = function() {
+    tracking = false;
+
     p.randomSeed(seed);
 
     // TODO: figure out a good way to track this state along with the rest
@@ -167,9 +191,15 @@ const beforeMain = function() {
     stateModifiers.forEach(name => {
         p[name](...defaultState[name]);
     });
+
+    state.isStroked = defaultState.isStroked;
+
+    tracking = true;
 };
 
 const afterMain = function() {
+    tracking = false;
+
     Object.assign(afterState, clone(state));
 
     // maintain invariant: snapshot is always the state after running main
@@ -182,6 +212,21 @@ const afterMain = function() {
             snapshot[name] = afterState[name];
         }
     });
+
+    if (compare(snapshot.isStroked, afterState.isStroked)) {
+        state.isStroked = beforeState.isStroked;
+    } else {
+        snapshot.isStroked = afterState.isStroked;
+    }
+
+    console.log(`snapshot.isStroked = ${snapshot.isStroked}`);
+    if (state.isStroked) {
+        p.stroke(...state.stroke);
+    } else {
+        p.noStroke();
+    }
+
+    tracking = true;
 };
 
 module.exports = {

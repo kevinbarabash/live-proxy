@@ -292,7 +292,7 @@ const transform = function(code, libraryObject, customWindow) {
                 if (parent && parent.type === 'AssignmentExpression') {
                     const name = getName(parent.left);
                     const parts = name.split('.');
-                    if (parts[0] === '__env__') {
+                    if (parts[0] === '__env__' || parts[0] === '__p__') {
                         node.id = b.Identifier(parts[parts.length - 1]);
                     }
                 }
