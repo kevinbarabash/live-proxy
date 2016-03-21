@@ -1,8 +1,3 @@
-require('babel-polyfill');
-require('whatwg-fetch');
-
-const { handleUpdate } = require('./live-proxy');
-
 const displayLint = function(messages) {
     const messageContainer = document.querySelector('#messages');
 
@@ -20,15 +15,16 @@ const displayException = function(e) {
     // TODO: should actually stop the program
 };
 
-// TODO: make this less hacky (processing-environment.js uses this)
-window.displayException = displayException;
+var editor = ace.edit("editor");
+editor.setFontSize(16);
+editor.session.setMode("ace/mode/javascript");
 
 fetch('example_2.js')
     .then(res => res.text())
     .then(code => {
         editor.setValue(code);
         editor.on("input", () => {
-            handleUpdate(editor.getValue(), displayLint, displayException);
+            LiveProxy.handleUpdate(editor.getValue(), displayLint, displayException);
         });
         const selection = editor.getSelection();
         selection.moveCursorFileStart();

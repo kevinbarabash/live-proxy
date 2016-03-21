@@ -45,6 +45,8 @@
 <script src="../lib/eslint.js"></script>
 <script src="../lib/ace/ace.js"></script>
 <script src="../lib/object-hash.js"></script>
+<script src="../node_modules/babel-polyfill/browser.js"></script>
+<script src="../node_modules/whatwg-fetch/fetch.js"></script>
 
 <div id="container">
     <div id="editor"></div>
@@ -54,13 +56,8 @@
     </div>
 </div>
 
-<script>
-    var editor = ace.edit("editor");
-    editor.setFontSize(16);
-    editor.session.setMode("ace/mode/javascript");
-</script>
-
 <script src="bundle.js"></script>
+<script src="index.js"></script>
 
 </body>
 </html>
