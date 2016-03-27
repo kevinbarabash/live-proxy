@@ -95,7 +95,11 @@ const handleUpdate = function(code, displayLint, displayException) {
     const messages = eslint.verify(pGlobals + customWindow.globals + code, {
         rules: {
             "semi": 2,
-            "no-undef": 2
+            "no-undef": 2,
+        },
+        env: {
+            "browser": true,
+            "es6": true,
         }
     });
 

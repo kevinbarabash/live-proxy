@@ -102,6 +102,11 @@ const transform = function(code, libraryObject, customWindow) {
                         return;
                     }
 
+                    if (parent.type === 'MethodDefinition') {
+                        node.usesThis = true;
+                        return;
+                    }
+
                     // These values show up a Identifiers in the AST.  We don't
                     // want to prefix them so return.
                     // TODO: only allow this inside of functions
@@ -344,6 +349,10 @@ const transform = function(code, libraryObject, customWindow) {
                     );
                 }
 
+                if (parent.type === 'MethodDefinition') {
+                    return;
+                }
+
                 return b.SequenceExpression([
                     b.AssignmentExpression(
                         b.Identifier('_'),
@@ -371,9 +380,12 @@ const transform = function(code, libraryObject, customWindow) {
         }
     });
 
+    const transformedCode = escodegen.generate(ast);
+    console.log(transformedCode);
+
     return {
         ast: ast,
-        transformedCode: escodegen.generate(ast),
+        transformedCode: transformedCode,
         globals: globals
     };
 };

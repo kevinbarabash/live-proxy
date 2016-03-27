@@ -19,7 +19,7 @@ var editor = ace.edit("editor");
 editor.setFontSize(16);
 editor.session.setMode("ace/mode/javascript");
 
-fetch('example_2.js')
+fetch('example_2a.js')
     .then(res => res.text())
     .then(code => {
         editor.setValue(code);
