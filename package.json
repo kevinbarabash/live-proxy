@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "watchify src/live-proxy.js -t babelify -o dist/bundle.js -s LiveProxy -v"
+    "watch": "watchify src/live-proxy.js -t babelify -o dist/bundle.js -s LiveProxy -v",
+    "watch_test": "watchify test/all_specs.js -t babelify -o test/all_specs.build.js -v"
   },
   "repository": {
     "type": "git",

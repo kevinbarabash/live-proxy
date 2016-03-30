@@ -1,3 +1,4 @@
 dist/bundle.js
+test/all_specs.build.js
 node_modules
 gh-pages

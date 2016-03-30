@@ -1,3 +1,5 @@
+import { handleUpdate } from '../src/live-proxy';
+
 describe('Sandboxing', () => {
     it('should fail', () => {
         expect(true).to.be(false);
