@@ -1,19 +1,36 @@
-const displayLint = function(messages) {
-    const messageContainer = document.querySelector('#messages');
+const canvas = document.getElementById("canvas");
 
-    messageContainer.innerHTML = messages.map(message => {
-        return `${message.message} on line ${message.line - 2} column ${message.column}<BR>`;
-    }).join('');
+
+const delegate = {
+    displayLint(messages) {
+        const messageContainer = document.querySelector('#messages');
+
+        messageContainer.innerHTML = messages.map(message => {
+            return `${message.message} on line ${message.line - 2} column ${message.column}<BR>`;
+        }).join('');
+
+        if (messages.length > 0) {
+            canvas.style.opacity = 0.5;
+        } else {
+            canvas.style.opacity = 1.0;
+        }
+    },
+
+    displayException(e) {
+        const messageContainer = document.querySelector('#messages');
+
+        messageContainer.innerHTML = `${e.name}: ${e.message}`;
+
+        canvas.style.opacity = 0.5;
+
+        // TODO: should actually stop the program
+    },
+
+    successfulRun() {
+        canvas.style.opacity = 1.0;
+    }
 };
 
-
-const displayException = function(e) {
-    const messageContainer = document.querySelector('#messages');
-
-    messageContainer.innerHTML = `${e.name}: ${e.message}`;
-
-    // TODO: should actually stop the program
-};
 
 var editor = ace.edit("editor");
 editor.setFontSize(16);
@@ -24,7 +41,7 @@ fetch('example_2a.js')
     .then(code => {
         editor.setValue(code);
         editor.on("input", () => {
-            LiveProxy.handleUpdate(editor.getValue(), displayLint, displayException);
+            LiveProxy.handleUpdate(editor.getValue(), delegate);
         });
         const selection = editor.getSelection();
         selection.moveCursorFileStart();

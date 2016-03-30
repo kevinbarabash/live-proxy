@@ -4,8 +4,6 @@ const loopChecker = require('./loop-checker');
 const { createProxy } = require('./proxy');
 const { beforeMain, afterMain, p, pGlobals } = require('./processing-environment');
 
-const canvas = document.getElementById("canvas");
-
 
 // Persists objects between code changes and re-runs of the code.
 const persistentContext = {};
@@ -57,7 +55,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
     Object.keys(newContext).forEach(name => {
         const value = newContext[name];
 
-        if (typeof value === 'object' || typeof value === 'string' || typeof value === 'number') {
+        if (['object', 'string', 'number'].includes(typeof value)) {
             const hash = value === customWindow.window
                 ? 'customWindow'
                 : objectHash(value, { respectType: false, ignoreUnknown: true });
@@ -68,7 +66,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
             // persistentContext will contain any changes to those objects.  As
             // long as the hashes match it's safe to replace the object in the
             // new context with the one that's been accumulating changes from
-            // the persisten context.
+            // the persistent context.
             if (objectHashes[name] === hash) {
                 newContext[name] = persistentContext[name];
             } else {
@@ -91,7 +89,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 };
 
 
-const handleUpdate = function(code, displayLint, displayException) {
+const handleUpdate = function(code, delegate) {
     const messages = eslint.verify(pGlobals + customWindow.globals + code, {
         rules: {
             "semi": 2,
@@ -104,10 +102,9 @@ const handleUpdate = function(code, displayLint, displayException) {
     });
 
     if (messages.length > 0) {
-        displayLint(messages);
-        canvas.style.opacity = 0.5;
+        delegate.displayLint(messages);
     } else {
-        displayLint(messages);
+        delegate.displayLint(messages);
         try {
             const { transformedCode, globals } = transform(code, p, customWindow.window);
             window.transformedCode = transformedCode;
@@ -141,10 +138,9 @@ const handleUpdate = function(code, displayLint, displayException) {
 
             updateEnvironments(persistentContext, context, funcList);
 
-            canvas.style.opacity = 1.0;
+            delegate.successfulRun();
         } catch(e) {
-            displayException(e);
-            canvas.style.opacity = 0.5;
+            delegate.displayException(e);
         }
     }
 };
