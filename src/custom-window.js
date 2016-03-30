@@ -33,6 +33,7 @@ const win = {
 const globals = "/*global " + Object.keys(win).join(" ") + "*/\n";
 
 module.exports = {
-    window: win,
+    name: '__window__',
+    object: win,
     globals: globals,
 };

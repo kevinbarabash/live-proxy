@@ -36,12 +36,13 @@ var editor = ace.edit("editor");
 editor.setFontSize(16);
 editor.session.setMode("ace/mode/javascript");
 
-fetch('example_2a.js')
+fetch('example_2.js')
     .then(res => res.text())
     .then(code => {
         editor.setValue(code);
         editor.on("input", () => {
-            LiveProxy.handleUpdate(editor.getValue(), delegate);
+            LiveProxy.handleUpdate(
+                editor.getValue(), delegate, LiveProxy.customLibrary);
         });
         const selection = editor.getSelection();
         selection.moveCursorFileStart();

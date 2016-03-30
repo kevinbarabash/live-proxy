@@ -38,8 +38,7 @@ var getName = function(node) {
     }
 };
 
-// TODO: allow an array of objects to pull global references from
-const transform = function(code, libraryObject, customWindow) {
+const transform = function(code, customWindow, customLibrary) {
     const ast = esprima.parse(code, { range: true });
     console.log(ast);
 
@@ -117,22 +116,22 @@ const transform = function(code, libraryObject, customWindow) {
                     }
 
                     if (node.name === "window") {
-                        return b.Identifier('customWindow');
+                        return b.Identifier(customWindow.name);
                     }
 
                     // Prefix identifiers that exist in the library object and
                     // have not been defined in any scope.
                     // Since we're looking in libraryObject first, any functions
                     // in it have precedence over customWindow.
-                    if (node.name in libraryObject && scopeIndex === -1) {
+                    if (node.name in customLibrary.object && scopeIndex === -1) {
                         return b.MemberExpression(
-                            b.Identifier('__p__'), b.Identifier(node.name));
+                            b.Identifier(customLibrary.name), b.Identifier(node.name));
                     }
 
                     // TODO: figure out how to track values added to window
-                    if (node.name in customWindow && scopeIndex === -1) {
+                    if (node.name in customWindow.object && scopeIndex === -1) {
                         return b.MemberExpression(
-                            b.Identifier('customWindow'), b.Identifier(node.name));
+                            b.Identifier(customWindow.name), b.Identifier(node.name));
                     }
 
                     // Prefix identifiers that have been declared by the user
@@ -164,8 +163,8 @@ const transform = function(code, libraryObject, customWindow) {
                     // special, they should be treated in the exact same way.
                     if (scopes.length === 1) {
                         if (["Program", "BlockStatement", "SwitchCase"].includes(parent.type)) {
-                            const objectName = decl.id.name in libraryObject
-                                ? '__p__'
+                            const objectName = decl.id.name in customLibrary.object
+                                ? customLibrary.name
                                 : envName;
 
                             return b.ExpressionStatement(
@@ -191,7 +190,7 @@ const transform = function(code, libraryObject, customWindow) {
                                 );
                             } else if (["ForInStatement"].includes(parent.type)) {
                                 // Handle variables declared inside a 'for in' statement,
-                                //  occuring in the global scope.
+                                // occurring in the global scope.
                                 // Example:
                                 //  for (var i in obj) { ... }
                                 //  for (__env__.i in __env__.obj) { ... }
@@ -298,7 +297,7 @@ const transform = function(code, libraryObject, customWindow) {
                 if (parent && parent.type === 'AssignmentExpression') {
                     const name = getName(parent.left);
                     const parts = name.split('.');
-                    if (parts[0] === '__env__' || parts[0] === '__p__') {
+                    if (parts[0] === '__env__' || parts[0] === customLibrary.name) {
                         node.id = b.Identifier(parts[parts.length - 1]);
                         if (drawLoopMethods.includes(parts[1])) {
                             isEntryPoint = true;
@@ -339,7 +338,7 @@ const transform = function(code, libraryObject, customWindow) {
                                             '===',
                                             b.Identifier('window')
                                         ),
-                                        b.Identifier('customWindow'),
+                                        b.Identifier(customWindow.name),
                                         b.ThisExpression()
                                     )
                                 )

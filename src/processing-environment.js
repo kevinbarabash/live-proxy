@@ -341,6 +341,7 @@ const afterMain = function() {
 module.exports = {
     beforeMain: beforeMain,
     afterMain: afterMain,
-    pGlobals: pGlobals,
-    p: p
+    name: '__p__',
+    object: p,
+    globals: pGlobals,
 };

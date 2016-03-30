@@ -2,7 +2,7 @@ const transform = require('./transform');
 const customWindow = require('./custom-window');
 const loopChecker = require('./loop-checker');
 const { createProxy } = require('./proxy');
-const { beforeMain, afterMain, p, pGlobals } = require('./processing-environment');
+const customLibrary = require('./processing-environment');
 
 
 // Persists objects between code changes and re-runs of the code.
@@ -89,8 +89,8 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 };
 
 
-const handleUpdate = function(code, delegate) {
-    const messages = eslint.verify(pGlobals + customWindow.globals + code, {
+const handleUpdate = function(code, delegate, customLibrary) {
+    const messages = eslint.verify(customLibrary.globals + customWindow.globals + code, {
         rules: {
             "semi": 2,
             "no-undef": 2,
@@ -106,13 +106,18 @@ const handleUpdate = function(code, delegate) {
     } else {
         delegate.displayLint(messages);
         try {
-            const { transformedCode, globals } = transform(code, p, customWindow.window);
-            window.transformedCode = transformedCode;
+            const { transformedCode, globals } = transform(code, customWindow, customLibrary);
+
+            const params = [
+                '__env__', customWindow.name, customLibrary.name, 'getSource', 'loopChecker'
+            ];
+            const main = Function(...params, transformedCode);
+
 
             // grab the current values before re-running the function
             Object.keys(context).forEach(name => {
                 const value = context[name];
-                if (typeof value === 'number' || typeof value === 'string' || typeof value === 'object') {
+                if (['number', 'string', 'object'].includes(typeof value)) {
                     persistentContext[name] = value;
                 }
             });
@@ -121,24 +126,25 @@ const handleUpdate = function(code, delegate) {
                 return code.substring(start, end);
             };
 
-            const func = new Function('__env__', 'customWindow', '__p__', 'getSource', 'loopChecker', transformedCode);
-
-            // TODO: expand funcList to include all data types
-            const funcList = {};    // functions being defined during this run
             context = {};
-            window.context = context;
 
             injectProxies(context, globals);
 
-            beforeMain();
+            customLibrary.beforeMain();
 
-            func(context, customWindow.window, p, getSource, loopChecker);
+            main(context, customWindow.object, customLibrary.object, getSource, loopChecker);
 
-            afterMain();
+            customLibrary.afterMain();
 
+            // TODO: expand funcList to include all data types
+            const funcList = {};    // functions being defined during this run
             updateEnvironments(persistentContext, context, funcList);
 
             delegate.successfulRun();
+
+            // for debugging only
+            window.context = context;
+            window.transformedCode = transformedCode;
         } catch(e) {
             delegate.displayException(e);
         }
@@ -146,5 +152,6 @@ const handleUpdate = function(code, delegate) {
 };
 
 module.exports = {
+    customLibrary: customLibrary,
     handleUpdate: handleUpdate
 };
