@@ -90,8 +90,10 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 };
 
 
-const handleUpdate = function(code, delegate, customLibrary) {
-    const messages = eslint.verify(customLibrary.globals + customWindow.globals + code, {
+const lintCode = function(code, customLibrary) {
+    const globals = customLibrary.globals + customWindow.globals;
+
+    return eslint.verify(globals + code, {
         rules: {
             "semi": 2,
             "no-undef": 2,
@@ -101,52 +103,62 @@ const handleUpdate = function(code, delegate, customLibrary) {
             "es6": true,
         }
     });
+};
+
+
+const updateCode = function(code, delegate, customLibrary) {
+    const { transformedCode, globals } = transform(code, customWindow, customLibrary);
+
+    const params = [
+        '__env__', customWindow.name, customLibrary.name, 'getSource', 'loopChecker'
+    ];
+    const main = Function(...params, transformedCode);
+
+
+    // grab the current values before re-running the function
+    Object.keys(context).forEach(name => {
+        const value = context[name];
+        if (['number', 'string', 'object'].includes(typeof value)) {
+            persistentContext[name] = value;
+        }
+    });
+
+    const getSource = function(start, end) {
+        return code.substring(start, end);
+    };
+
+    // reset context before capturing values
+    context = {};
+
+    injectProxies(context, globals);
+
+    customLibrary.beforeMain();
+
+    main(context, customWindow.object, customLibrary.object, getSource, loopChecker);
+
+    customLibrary.afterMain();
+
+    // TODO: expand funcList to include all data types
+    const funcList = {};    // functions being defined during this run
+    updateEnvironments(persistentContext, context, funcList);
+
+    delegate.successfulRun();
+
+    // for debugging only
+    window.context = context;
+    window.transformedCode = transformedCode;
+};
+
+
+const handleUpdate = function(code, delegate, customLibrary) {
+    const messages = lintCode(code, customLibrary);
 
     if (messages.length > 0) {
         delegate.displayLint(messages);
     } else {
         delegate.displayLint(messages);
         try {
-            const { transformedCode, globals } = transform(code, customWindow, customLibrary);
-
-            const params = [
-                '__env__', customWindow.name, customLibrary.name, 'getSource', 'loopChecker'
-            ];
-            const main = Function(...params, transformedCode);
-
-
-            // grab the current values before re-running the function
-            Object.keys(context).forEach(name => {
-                const value = context[name];
-                if (['number', 'string', 'object'].includes(typeof value)) {
-                    persistentContext[name] = value;
-                }
-            });
-
-            const getSource = function(start, end) {
-                return code.substring(start, end);
-            };
-
-            // reset context before capturing values
-            context = {};
-
-            injectProxies(context, globals);
-
-            customLibrary.beforeMain();
-
-            main(context, customWindow.object, customLibrary.object, getSource, loopChecker);
-
-            customLibrary.afterMain();
-
-            // TODO: expand funcList to include all data types
-            const funcList = {};    // functions being defined during this run
-            updateEnvironments(persistentContext, context, funcList);
-
-            delegate.successfulRun();
-
-            // for debugging only
-            window.context = context;
-            window.transformedCode = transformedCode;
+            updateCode(code, delegate, customLibrary);
         } catch(e) {
             delegate.displayException(e);
         }
