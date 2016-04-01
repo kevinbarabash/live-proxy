@@ -40,7 +40,6 @@ var getName = function(node) {
 
 const transform = function(code, customWindow, customLibrary) {
     const ast = esprima.parse(code, { range: true });
-    console.log(ast);
 
     // TODO: grab these from the environment
     // TODO: refer to these as entry points in the future
@@ -261,7 +260,6 @@ const transform = function(code, customWindow, customLibrary) {
                 currentFunction.usesThis = true;
                 return b.Identifier('_this');
             } else if (node.type === 'Program') {
-                console.log(node.body);
                 node.body.unshift(
                     b.ExpressionStatement(
                         b.CallExpression(
@@ -380,7 +378,6 @@ const transform = function(code, customWindow, customLibrary) {
     });
 
     const transformedCode = escodegen.generate(ast);
-    console.log(transformedCode);
 
     return {
         ast: ast,

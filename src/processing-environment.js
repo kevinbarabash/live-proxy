@@ -1,3 +1,5 @@
+const avatars = require('./avatars');
+
 const getInheritedProps = function(obj) {
     const props = [];
 
@@ -8,11 +10,22 @@ const getInheritedProps = function(obj) {
     return props;
 };
 
+const getGlobalsString = function(obj) {
+    const props = getInheritedProps(obj);
+
+    return "/*global " +
+        props
+            .filter(key => !(key[0] === '_' && key[1] === '_'))
+            .map(key => eventHandlers.includes(key) ? `${key}:true` : key)
+            .join(" ") +
+        "*/\n";
+};
+
 const DUMMY = function() {};
 
 
 class ProcessingEnvironment {
-    constructor(canvas) {
+    constructor(canvas, displayException = DUMMY) {
         this.p = new Processing(canvas, (processing) => {
             processing.width = canvas.width;
             processing.height = canvas.height;
@@ -22,8 +35,11 @@ class ProcessingEnvironment {
 
         const p = this.p;
 
-        p.getImage = function(filename) {
-            return new p.PImage(cache[filename]);
+        this.imageCache = {};
+        avatars.forEach(avatar => this._loadImage(`avatars/${avatar}`));
+
+        p.getImage = filename => {
+            return new p.PImage(this.imageCache[filename]);
         };
 
         this.defaultState = {
@@ -51,17 +67,11 @@ class ProcessingEnvironment {
         this.beforeState = {};
         this.afterState = {};
 
-        const props = getInheritedProps(p);
-
-        this.globals = "/*global " +
-            props
-                .filter(key => !(key[0] === '_' && key[1] === '_'))
-                .map(key => eventHandlers.includes(key) ? `${key}:true` : key)
-                .join(" ") +
-            "*/\n";
-
+        // used by handleUpdate
+        this.globals = getGlobalsString(p);
         this.name = '__p__';
         this.object = p;
+
         this.tracking = false;
 
         const state = this.state;
@@ -118,14 +128,10 @@ class ProcessingEnvironment {
                         try {
                             newValue.apply(p, arguments);
                         } catch(e) {
-                            // TODO: pass in displayException
-                            console.log('exception: ', e);
-                            //displayException(e);
+                            displayException(e);
                         }
                     };
-                    if (newValue === DUMMY) {
-                        value.dummy = true;
-                    }
+                    value.dummy = newValue === DUMMY;
                 }
             });
         });
@@ -138,6 +144,25 @@ class ProcessingEnvironment {
 
         // expose p as a global for debugging purposes
         window.p = p;
+    }
+
+    _loadImage(filename) {
+        const img = document.createElement('img');
+
+        const promise = new Promise((resolve, reject) => {
+            img.onload = () => {
+                console.log(filename);
+                this.imageCache[filename] = img;
+                resolve();
+            };
+            img.onerror = () => {
+                resolve(); // always resolve
+            };
+        });
+
+        img.src = `images/${filename}.png`;
+
+        return promise;
     }
 
     beforeMain() {
@@ -198,7 +223,6 @@ class ProcessingEnvironment {
             snapshot.isStroked = afterState.isStroked;
         }
 
-        console.log(`snapshot.isStroked = ${snapshot.isStroked}`);
         if (state.isStroked) {
             p.stroke(...state.stroke);
         } else {
@@ -208,111 +232,6 @@ class ProcessingEnvironment {
         this.tracking = true;
     };
 }
-
-const cache = {};
-
-const loadImage = function(filename) {
-    const img = document.createElement('img');
-
-    const promise = new Promise((resolve, reject) => {
-        img.onload = function() {
-            cache[filename] = img;
-            resolve();
-        }.bind(this);
-        img.onerror = function() {
-            resolve(); // always resolve
-        }.bind(this);
-    });
-
-    img.src = `images/${filename}.png`;
-
-    return promise;
-};
-
-const avatars = [
-    'aqualine-sapling',
-    'aqualine-seed',
-    'aqualine-seedling',
-    'aqualine-tree',
-    'aqualine-ultimate',
-    'avatar-team',
-    'cs-hopper-cool',
-    'cs-hopper-happy',
-    'cs-hopper-jumping',
-    'cs-ohnoes',
-    'cs-winston-baby',
-    'cs-winston',
-    'duskpin-sapling',
-    'duskpin-seed',
-    'duskpin-seedling',
-    'duskpin-tree',
-    'duskpin-ultimate',
-    'leaf-blue',
-    'leaf-green',
-    'leaf-grey',
-    'leaf-orange',
-    'leaf-red',
-    'leaf-yellow',
-    'leafers-sapling',
-    'leafers-seed',
-    'leafers-seedling',
-    'leafers-tree',
-    'leafers-ultimate',
-    'marcimus-orange',
-    'marcimus-purple',
-    'marcimus-red',
-    'marcimus',
-    'mr-pants-green',
-    'mr-pants-orange',
-    'mr-pants-pink',
-    'mr-pants-purple',
-    'mr-pants-with-hat',
-    'mr-pants',
-    'mr-pink-green',
-    'mr-pink-orange',
-    'mr-pink',
-    'mystery-1',
-    'mystery-2',
-    'old-spice-man-blue',
-    'old-spice-man',
-    'orange-juice-squid',
-    'piceratops-sapling',
-    'piceratops-seed',
-    'piceratops-seedling',
-    'piceratops-tree',
-    'piceratops-ultimate',
-    'primosaur-sapling',
-    'primosaur-seed',
-    'primosaur-seedling',
-    'primosaur-tree',
-    'primosaur-ultimate',
-    'purple-pi-pink',
-    'purple-pi-teal',
-    'purple-pi',
-    'questionmark',
-    'robot_female_1',
-    'robot_female_2',
-    'robot_female_3',
-    'robot_male_1',
-    'robot_male_2',
-    'robot_male_3',
-    'spunky-sam-green',
-    'spunky-sam-orange',
-    'spunky-sam-red',
-    'spunky-sam',
-    'starky-sapling',
-    'starky-seed',
-    'starky-seedling',
-    'starky-tree',
-    'starky-ultimate',
-];
-
-avatars.forEach(avatar => {
-    loadImage(`avatars/${avatar}`).then(() => {
-        console.log(`avatars/${avatar} loaded`);
-    });
-});
-
 
 const stateModifiers = [
     'colorMode',

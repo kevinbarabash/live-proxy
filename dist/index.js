@@ -36,7 +36,8 @@ var editor = ace.edit("editor");
 editor.setFontSize(16);
 editor.session.setMode("ace/mode/javascript");
 
-var customLibrary = new LiveProxy.ProcessingEnvironment(canvas);
+var customLibrary =
+    new LiveProxy.ProcessingEnvironment(canvas, delegate.displayException);
 
 fetch('example_2.js')
     .then(res => res.text())
