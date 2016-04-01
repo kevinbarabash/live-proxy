@@ -1,7 +1,7 @@
-const customLibrary = require('./processing-environment');
+const ProcessingEnvironment = require('./processing-environment');
 const { handleUpdate } = require('./update-code');
 
 module.exports = {
-    customLibrary: customLibrary,
+    ProcessingEnvironment: ProcessingEnvironment,
     handleUpdate: handleUpdate
 };
