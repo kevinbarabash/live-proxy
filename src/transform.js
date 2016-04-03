@@ -377,7 +377,7 @@ const transform = function(code, customWindow, customLibrary) {
         }
     });
 
-    const transformedCode = escodegen.generate(ast);
+    const transformedCode = 'var _;' + escodegen.generate(ast);
 
     return {
         ast: ast,

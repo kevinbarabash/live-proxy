@@ -137,6 +137,8 @@ const updateCode = function(code, customLibrary) {
     // TODO: expand funcList to include all data types
     const funcList = {};    // functions being defined during this run
     updateEnvironments(persistentContext, context, funcList);
+
+    return context; // used for testing
 };
 
 const emptyLibrary = {
@@ -156,14 +158,15 @@ const emptyDelegate = {
 const handleUpdate = function(code, delegate = emptyDelegate, customLibrary = emptyLibrary) {
     const messages = lintCode(code, customLibrary);
 
-    if (messages.length > 0) {
-        delegate.displayLint(messages);
-    } else {
-        delegate.displayLint(messages);
+    delegate.displayLint(messages);
+
+    if (messages.length === 0) {
         try {
-            updateCode(code, customLibrary);
+            const context = updateCode(code, customLibrary);
             delegate.successfulRun();
+            return context;
         } catch(e) {
+            console.log(e);
             delegate.displayException(e);
         }
     }

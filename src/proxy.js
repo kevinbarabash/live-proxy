@@ -14,10 +14,16 @@ const createProxy = function(constructor) {
     ProxyClass.update = function(newConstructor) {
         currentConstructor = newConstructor;
 
-        // copy over new methods because they reference variables from
-        // the new context
+        // copy over new or modified methods
         Object.keys(newConstructor.prototype).forEach(name => {
             ProxyClass.prototype[name] = newConstructor.prototype[name];
+        });
+
+        // delete methods that have been removed
+        Object.keys(ProxyClass.prototype).forEach(name => {
+            if (!newConstructor.prototype.hasOwnProperty(name)) {
+                delete ProxyClass.prototype[name];
+            }
         });
 
         ProxyClass.toString = newConstructor.toString;
