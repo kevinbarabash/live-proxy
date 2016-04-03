@@ -56,6 +56,7 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
     Object.keys(newContext).forEach(name => {
         const value = newContext[name];
 
+        // TODO: expand this to simply be !function
         if (['object', 'string', 'number'].includes(typeof value)) {
             const hash = value === customWindow.window
                 ? 'customWindow'
@@ -106,29 +107,24 @@ const lintCode = function(code, customLibrary) {
 };
 
 
-const updateCode = function(code, delegate, customLibrary) {
+const updateCode = function(code, customLibrary) {
     const { transformedCode, globals } = transform(code, customWindow, customLibrary);
 
-    const params = [
-        '__env__', customWindow.name, customLibrary.name, 'getSource', 'loopChecker'
-    ];
+    const params = ['__env__', customWindow.name, customLibrary.name, 'getSource', 'loopChecker'];
     const main = Function(...params, transformedCode);
-
 
     // grab the current values before re-running the function
     Object.keys(context).forEach(name => {
         const value = context[name];
+        // TODO: expand to this to be simply !function
         if (['number', 'string', 'object'].includes(typeof value)) {
             persistentContext[name] = value;
         }
     });
 
-    const getSource = function(start, end) {
-        return code.substring(start, end);
-    };
+    const getSource = (start, end) => code.substring(start, end);
 
-    // reset context before capturing values
-    context = {};
+    context = {};   // reset before capturing values
 
     injectProxies(context, globals);
 
@@ -141,16 +137,23 @@ const updateCode = function(code, delegate, customLibrary) {
     // TODO: expand funcList to include all data types
     const funcList = {};    // functions being defined during this run
     updateEnvironments(persistentContext, context, funcList);
-
-    delegate.successfulRun();
-
-    // for debugging only
-    window.context = context;
-    window.transformedCode = transformedCode;
 };
 
+const emptyLibrary = {
+    object: {},
+    name: '__library__',
+    globals: '',
+    beforeMain() {},
+    afterMain() {},
+};
 
-const handleUpdate = function(code, delegate, customLibrary) {
+const emptyDelegate = {
+    displayLint() {},
+    displayException() {},
+    successfulRun() {},
+};
+
+const handleUpdate = function(code, delegate = emptyDelegate, customLibrary = emptyLibrary) {
     const messages = lintCode(code, customLibrary);
 
     if (messages.length > 0) {
@@ -158,7 +161,8 @@ const handleUpdate = function(code, delegate, customLibrary) {
     } else {
         delegate.displayLint(messages);
         try {
-            updateCode(code, delegate, customLibrary);
+            updateCode(code, customLibrary);
+            delegate.successfulRun();
         } catch(e) {
             delegate.displayException(e);
         }
