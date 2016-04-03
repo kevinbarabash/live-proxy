@@ -32,20 +32,21 @@ const delegate = {
 };
 
 
-var editor = ace.edit("editor");
+const editor = ace.edit("editor");
 editor.setFontSize(16);
 editor.session.setMode("ace/mode/javascript");
 
-var customLibrary =
-    LiveProxy.createProcessingEnvironment(canvas, delegate.displayException);
+const { createProcessingEnvironment, handleUpdate, KAProcessing } = LiveProxy;
+
+const p = new KAProcessing(canvas);
+const customLibrary = createProcessingEnvironment(p, delegate.displayException);
 
 fetch('example_2.js')
     .then(res => res.text())
     .then(code => {
         editor.setValue(code);
         editor.on("input", () => {
-            LiveProxy.handleUpdate(
-                editor.getValue(), delegate, customLibrary);
+            handleUpdate(editor.getValue(), delegate, customLibrary);
         });
         const selection = editor.getSelection();
         selection.moveCursorFileStart();

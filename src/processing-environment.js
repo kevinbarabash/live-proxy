@@ -1,5 +1,3 @@
-const avatars = require('./avatars');
-
 const getInheritedProps = function(obj) {
     const props = [];
 
@@ -21,25 +19,6 @@ const getGlobalsString = function(obj) {
         "*/\n";
 };
 
-const loadImage = function(imageCache, filename) {
-    const img = document.createElement('img');
-
-    const promise = new Promise((resolve, reject) => {
-        img.onload = () => {
-            console.log(filename);
-            imageCache[filename] = img;
-            resolve();
-        };
-        img.onerror = () => {
-            resolve(); // always resolve
-        };
-    });
-
-    img.src = `images/${filename}.png`;
-
-    return promise;
-};
-
 const DUMMY = function() {};
 
 const stateModifiers = [
@@ -59,6 +38,11 @@ const stateModifiers = [
     'textLeading',
     'textSize',
 ];
+
+const specialStateModifiers = {
+    noStroke: state => state.isStroked = false,
+    stroke: state => state.isStroked = true,
+};
 
 const eventHandlers = [
     "draw",
@@ -82,21 +66,8 @@ const compare = function(obj1, obj2) {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
 
-const createProcessingEnvironment = function(canvas, displayException = DUMMY) {
-    const p = new Processing(canvas, (processing) => {
-        processing.width = canvas.width;
-        processing.height = canvas.height;
-
-        processing.draw = function () {};
-    });
-
-    const imageCache = {};
-
-    avatars.forEach(avatar => loadImage(imageCache, `avatars/${avatar}`));
-
-    p.getImage = filename => {
-        return new p.PImage(imageCache[filename]);
-    };
+const createProcessingEnvironment = function(p, displayException = DUMMY) {
+    p.draw = DUMMY;
 
     const defaultState = {
         colorMode: [p.RGB],
@@ -104,6 +75,7 @@ const createProcessingEnvironment = function(canvas, displayException = DUMMY) {
         fill: [255, 255, 255],
         frameRate: [60],
         imageMode: [p.CORNER],
+        noStroke: [],
         rectMode: [p.CORNER],
         stroke: [0, 0, 0],
         strokeCap: [p.ROUND],
@@ -130,20 +102,23 @@ const createProcessingEnvironment = function(canvas, displayException = DUMMY) {
 
     let tracking = false;
 
+    const dontTrack = function(fn) {
+        return (...args) => {
+            tracking = false;
+            fn(...args);
+            tracking = true;
+        }
+    };
+
     stateModifiers.forEach(name => {
         let func = p[name];
 
         Object.defineProperty(p, name, {
             get() {
                 return (...args) => {
-                    // we use `that = this` because `this` here is bound to
-                    // the processing object b/c we calling defineProperty
-                    if (name === 'stroke' && tracking) {
-                        state.isStroked = true;
+                    if (specialStateModifiers[name] && tracking) {
+                        specialStateModifiers[name](state);
                     }
-                    // TODO: instead of toggling record... we can just grab the state at a particular point in time
-                    // we want to be able to take snapshots of state a different times
-                    // compare those snapshots and update the current state appropriately
                     state[name] = args;
                     func.apply(p, args);
                 };
@@ -152,22 +127,6 @@ const createProcessingEnvironment = function(canvas, displayException = DUMMY) {
                 func = value;
             }
         });
-    });
-
-    let noStroke = p.noStroke;
-
-    Object.defineProperty(p, 'noStroke', {
-        get() {
-            return (...args) => {
-                if (tracking) {
-                    state.isStroked = false;
-                }
-                noStroke.apply(p, args);
-            }
-        },
-        set(value) {
-            noStroke = value;
-        }
     });
 
     eventHandlers.forEach(name => {
@@ -184,55 +143,41 @@ const createProcessingEnvironment = function(canvas, displayException = DUMMY) {
                         displayException(e);
                     }
                 };
-                value.dummy = newValue === DUMMY;
             }
         });
     });
 
-    // TODO: provide a hook to reset the seed for manual restarts of the program
-    p.draw = DUMMY;
-    p.background(255, 255, 255);
+    let seed = Math.floor(Math.random() * 4294967296);
 
-    const seed = Math.floor(Math.random() * 4294967296);
+    const reset = () => {
+        p.draw = DUMMY;
+        p.background(255, 255, 255);
 
-    // expose p as a global for debugging purposes
-    window.p = p;
+        seed = Math.floor(Math.random() * 4294967296);
+    };
 
-    const beforeMain = function() {
-        tracking = false;
+    const beforeMain = dontTrack(() => {
+        p.randomSeed(defaultState.seed);
 
-        p.randomSeed(seed);
-
-        // TODO: figure out a good way to track this state along with the rest
+        // TODO: make angleMode a function in processing-js like rectMode, etc.
         p.angleMode = 'degrees';
 
-        // If there was no 'draw' defined, clear the background.
-        // This needs to be done before clearing all the event handlers b/c 'draw'
-        // is included in 'eventHandlers'
-        if (p.draw.dummy) {
+        if (p.draw === DUMMY) {
             p.background(255, 255, 255);
         }
 
-        eventHandlers.forEach(eventName => {
-            p[eventName] = DUMMY;
-        });
+        eventHandlers.forEach(eventName => p[eventName] = DUMMY);
 
         // capture state before main so that we can restore if after running main
         Object.assign(beforeState, clone(state));
 
         // reset state to handle deleting of state changing commands
-        stateModifiers.forEach(name => {
-            p[name](...defaultState[name]);
-        });
+        stateModifiers.forEach(name => p[name](...defaultState[name]));
 
         state.isStroked = defaultState.isStroked;
+    });
 
-        tracking = true;
-    };
-
-    const afterMain = function() {
-        tracking = false;
-
+    const afterMain = dontTrack(() => {
         Object.assign(afterState, clone(state));
 
         // maintain invariant: snapshot is always the state after running main
@@ -257,16 +202,19 @@ const createProcessingEnvironment = function(canvas, displayException = DUMMY) {
         } else {
             p.noStroke();
         }
+    });
 
-        tracking = true;
-    };
+    // expose p as a global for debugging purposes
+    window.p = p;
 
+    reset();
 
     return {
         name,
         object,
         globals,
 
+        reset,
         afterMain,
         beforeMain,
     };
