@@ -67,8 +67,6 @@ const compare = function(obj1, obj2) {
 };
 
 const createProcessingEnvironment = function(p, displayException = DUMMY) {
-    p.draw = DUMMY;
-
     const defaultState = {
         colorMode: [p.RGB],
         ellipseMode: [p.CENTER],
@@ -157,7 +155,7 @@ const createProcessingEnvironment = function(p, displayException = DUMMY) {
     };
 
     const beforeMain = dontTrack(() => {
-        p.randomSeed(defaultState.seed);
+        p.randomSeed(seed);
 
         // TODO: make angleMode a function in processing-js like rectMode, etc.
         p.angleMode = 'degrees';
