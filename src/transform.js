@@ -59,6 +59,12 @@ const transform = function(code, customWindow, customLibrary) {
 
     estraverse.replace(ast, {
         enter(node, parent) {
+            // need to check before we append a new scope
+            if (node.type === "FunctionDeclaration") {
+                let scope = scopes[scopes.length - 1];
+                scope[node.id.name] = true;
+            }
+
             // Create a new scope whenever we encounter a function declaration/expression
             // and add all of its paramters to this new scope.
             if (/^Function/.test(node.type)) {
@@ -279,6 +285,23 @@ const transform = function(code, customWindow, customLibrary) {
                         )
                     )
                 );
+            }
+
+            // rewrite FunctionDeclarations as FunctionExpressions
+            if (node.type === 'FunctionDeclaration' && ['Program', 'BlockStatement'].includes(parent.type)) {
+                const funcExpr = b.FunctionExpression(node.body, node.params, node.defaults);
+                funcExpr.range = node.range;
+                funcExpr.usesThis = node.usesThis;
+
+                if (parent.type === 'Program') {
+                    return b.ExpressionStatement(
+                        b.AssignmentExpression(node.id, '=', funcExpr)
+                    );
+                } else {
+                    return b.VariableDeclaration(
+                        [b.VariableDeclarator(node.id, funcExpr)], "var"
+                    );
+                }
             }
         }
     });
