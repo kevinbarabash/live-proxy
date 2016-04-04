@@ -108,7 +108,7 @@ const lintCode = function(code, customLibrary) {
 
 
 const updateCode = function(code, customLibrary) {
-    const { transformedCode, globals } = transform(code, customWindow, customLibrary);
+    const { transformedCode, globals, libraryGlobals } = transform(code, customWindow, customLibrary);
 
     const params = ['__env__', customWindow.name, customLibrary.name, 'getSource', 'loopChecker'];
     const main = Function(...params, transformedCode);
@@ -128,7 +128,7 @@ const updateCode = function(code, customLibrary) {
 
     injectProxies(context, globals);
 
-    customLibrary.beforeMain();
+    customLibrary.beforeMain(libraryGlobals);
 
     main(context, customWindow.object, customLibrary.object, getSource, loopChecker);
 

@@ -51,6 +51,7 @@ const transform = function(code, customWindow, customLibrary) {
     const riskyNodes = ['ForStatement', 'WhileStatement', 'DoWhileStatement'];
 
     const globals = {};
+    const libraryGlobals = {};
 
     let scopes = [globals];
     let currentFunction = null;
@@ -129,6 +130,7 @@ const transform = function(code, customWindow, customLibrary) {
                     // Since we're looking in libraryObject first, any functions
                     // in it have precedence over customWindow.
                     if (node.name in customLibrary.object && scopeIndex === -1) {
+                        libraryGlobals[node.name] = true;
                         return b.MemberExpression(
                             b.Identifier(customLibrary.name), b.Identifier(node.name));
                     }
@@ -405,7 +407,8 @@ const transform = function(code, customWindow, customLibrary) {
     return {
         ast: ast,
         transformedCode: transformedCode,
-        globals: globals
+        globals: globals,
+        libraryGlobals: libraryGlobals,
     };
 };
 

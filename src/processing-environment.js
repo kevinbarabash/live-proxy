@@ -127,6 +127,8 @@ const createProcessingEnvironment = function(p, displayException = DUMMY) {
         });
     });
 
+    let drawFunc = DUMMY;
+
     eventHandlers.forEach(name => {
         let value = undefined;
         Object.defineProperty(p, name, {
@@ -141,6 +143,7 @@ const createProcessingEnvironment = function(p, displayException = DUMMY) {
                         displayException(e);
                     }
                 };
+                drawFunc = newValue;
             }
         });
     });
@@ -154,13 +157,13 @@ const createProcessingEnvironment = function(p, displayException = DUMMY) {
         seed = Math.floor(Math.random() * 4294967296);
     };
 
-    const beforeMain = dontTrack(() => {
+    const beforeMain = dontTrack((libraryGlobals) => {
         p.randomSeed(seed);
 
         // TODO: make angleMode a function in processing-js like rectMode, etc.
         p.angleMode = 'degrees';
 
-        if (p.draw === DUMMY) {
+        if (!libraryGlobals.hasOwnProperty('draw')) {
             p.background(255, 255, 255);
         }
 
