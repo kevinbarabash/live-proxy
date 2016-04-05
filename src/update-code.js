@@ -91,22 +91,6 @@ const updateEnvironments = function(persistentContext, newContext, funcList) {
 };
 
 
-const lintCode = function(code, customLibrary) {
-    const globals = customLibrary.globals + customWindow.globals;
-
-    return eslint.verify(globals + code, {
-        rules: {
-            "semi": 2,
-            "no-undef": 2,
-        },
-        env: {
-            "browser": true,
-            "es6": true,
-        }
-    });
-};
-
-
 const updateCode = function(code, customLibrary) {
     const { transformedCode, globals, libraryGlobals } = transform(code, customWindow, customLibrary);
 
@@ -155,20 +139,14 @@ const emptyDelegate = {
     successfulRun() {},
 };
 
+// Assumes that the code has already been linted
 const handleUpdate = function(code, delegate = emptyDelegate, customLibrary = emptyLibrary) {
-    const messages = lintCode(code, customLibrary);
-
-    delegate.displayLint(messages);
-
-    if (messages.length === 0) {
-        try {
-            const context = updateCode(code, customLibrary);
-            delegate.successfulRun();
-            return context;
-        } catch(e) {
-            console.log(e);
-            delegate.displayException(e);
-        }
+    try {
+        const context = updateCode(code, customLibrary);
+        delegate.successfulRun();
+        return context;
+    } catch(e) {
+        delegate.displayException(e);
     }
 };
 
