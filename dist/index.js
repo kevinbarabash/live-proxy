@@ -1,5 +1,12 @@
 const canvas = document.getElementById("canvas");
-const { createProcessingEnvironment, handleUpdate, KAProcessing, customWindow } = LiveProxy;
+const {
+    createProcessingEnvironment,
+    handleUpdate,
+    KAProcessing,
+    customWindow,
+    avatars,
+    loadImage
+} = LiveProxy;
 
 const delegate = {
     displayLint(messages) {
@@ -47,6 +54,7 @@ const lintCode = function(code, customLibrary) {
     });
 };
 
+avatars.forEach(avatar => loadImage(`avatars/${avatar}`));
 
 const editor = ace.edit("editor");
 editor.setFontSize(16);

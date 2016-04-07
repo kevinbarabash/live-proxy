@@ -27,6 +27,7 @@ const stateModifiers = [
     'fill',
     'frameRate',
     'imageMode',
+    'noStroke',
     'rectMode',
     'stroke',
     'strokeCap',
@@ -206,7 +207,7 @@ const createProcessingEnvironment = function(p, displayException = DUMMY) {
     });
 
     // expose p as a global for debugging purposes
-    window.p = p;
+    // window.p = p;
 
     reset();
 
@@ -218,6 +219,9 @@ const createProcessingEnvironment = function(p, displayException = DUMMY) {
         reset,
         afterMain,
         beforeMain,
+
+        // used for testing
+        state,
     };
 };
 
